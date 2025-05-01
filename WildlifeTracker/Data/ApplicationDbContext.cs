@@ -54,7 +54,7 @@ namespace WildlifeTracker.Data
                 .IsRequired();
 
             modelBuilder.Entity<Sighting>()
-                .Property(s => s.ObserverName)
+                .Property(s => s.WeatherConditions)
                 .HasMaxLength(100)
                 .IsRequired();
 
@@ -83,10 +83,12 @@ namespace WildlifeTracker.Data
             }
         }
 
-        public override int SaveChanges()
+        public override int SaveChanges() => this.SaveChanges(true);
+
+        public override int SaveChanges(bool acceptAllChangesOnSuccess)
         {
             this.UpdateAuditInfo();
-            return base.SaveChanges();
+            return base.SaveChanges(acceptAllChangesOnSuccess);
         }
 
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

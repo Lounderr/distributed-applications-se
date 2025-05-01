@@ -4,7 +4,7 @@ namespace WildlifeTracker.Data.Models
     {
         public int AnimalId { get; set; }
         public int HabitatId { get; set; }
-        public required string ObserverName { get; set; }
+        public required string WeatherConditions { get; set; } // Weather during the sighting  
         public required string Notes { get; set; }
 
         public virtual required Animal Animal { get; set; }
