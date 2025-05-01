@@ -6,6 +6,6 @@ namespace WildlifeTracker.Data.Models
         public required string Location { get; set; }
         public double Size { get; set; }
         public required string Climate { get; set; }
-        public DateTime DateEstablished { get; set; }
+        public double AverageTemperature { get; set; }
     }
 }

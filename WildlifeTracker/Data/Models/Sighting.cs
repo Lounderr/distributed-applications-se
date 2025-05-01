@@ -4,7 +4,6 @@ namespace WildlifeTracker.Data.Models
     {
         public int AnimalId { get; set; }
         public int HabitatId { get; set; }
-        public DateTime DateSpotted { get; set; }
         public required string ObserverName { get; set; }
         public required string Notes { get; set; }
 

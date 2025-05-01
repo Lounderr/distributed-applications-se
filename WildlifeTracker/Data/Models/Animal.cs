@@ -6,6 +6,6 @@ namespace WildlifeTracker.Data.Models
         public required string Species { get; set; }
         public int Age { get; set; }
         public double Weight { get; set; }
-        public DateTime DateAdded { get; set; }
+        public int Height { get; set; }
     }
 }
