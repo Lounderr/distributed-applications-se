@@ -1,8 +1,7 @@
 namespace WildlifeTracker.Data.Models
 {
-    public class Habitat
+    public class Habitat : BaseEntity
     {
-        public int Id { get; set; }
         public required string Name { get; set; }
         public required string Location { get; set; }
         public double Size { get; set; }

@@ -18,7 +18,6 @@ namespace WildlifeTracker.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Change schema and names of ASP.NET Core Identity tables  
             this.ConfigureIdentityTables(modelBuilder);
 
             modelBuilder.Entity<Animal>()
@@ -55,6 +54,33 @@ namespace WildlifeTracker.Data
               .Property(s => s.Notes)
               .HasMaxLength(100)
               .IsRequired();
+        }
+
+        public override int SaveChanges()
+        {
+            this.UpdateAuditInfo();
+            return base.SaveChanges();
+        }
+
+        public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            this.UpdateAuditInfo();
+            return await base.SaveChangesAsync(cancellationToken);
+        }
+
+        private void UpdateAuditInfo()
+        {
+            this.ChangeTracker.Entries()
+                .Where(e => e.Entity is BaseEntity && (e.State == EntityState.Added || e.State == EntityState.Modified))
+                .ToList()
+                .ForEach(entry =>
+                {
+                    var entity = (IAuditInfo)entry.Entity;
+                    if (entry.State == EntityState.Modified)
+                    {
+                        entity.ModifiedOn = DateTime.UtcNow;
+                    }
+                });
         }
 
         private void ConfigureIdentityTables(ModelBuilder modelBuilder)

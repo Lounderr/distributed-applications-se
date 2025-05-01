@@ -9,6 +9,7 @@ using Microsoft.OpenApi.Models;
 
 using WildlifeTracker.Data;
 using WildlifeTracker.Data.Repositories;
+using WildlifeTracker.Middleware;
 
 namespace WildlifeTracker
 {
@@ -44,7 +45,15 @@ namespace WildlifeTracker
 
             AddJwtAuthentication(builder);
 
+            builder.Services.AddLogging(loggingBuilder =>
+                       {
+                           loggingBuilder.ClearProviders();
+                           loggingBuilder.AddConsole();
+                           loggingBuilder.AddDebug();
+                       });
             var app = builder.Build();
+
+            app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
 
             // Ensure database is deleted and created until adding migrations  
             using (var scope = app.Services.CreateScope())

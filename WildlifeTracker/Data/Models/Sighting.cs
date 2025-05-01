@@ -1,8 +1,7 @@
 namespace WildlifeTracker.Data.Models
 {
-    public class Sighting
+    public class Sighting : BaseEntity
     {
-        public int Id { get; set; }
         public int AnimalId { get; set; }
         public int HabitatId { get; set; }
         public DateTime DateSpotted { get; set; }

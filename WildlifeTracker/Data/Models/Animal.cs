@@ -1,8 +1,7 @@
 namespace WildlifeTracker.Data.Models
 {
-    public class Animal
+    public class Animal : BaseEntity
     {
-        public int Id { get; set; }
         public required string Name { get; set; }
         public required string Species { get; set; }
         public int Age { get; set; }

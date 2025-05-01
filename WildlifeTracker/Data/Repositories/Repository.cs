@@ -1,20 +1,14 @@
-﻿using System.Linq.Expressions;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Linq.Expressions;
 using System.Reflection;
 
 using Microsoft.EntityFrameworkCore;
 
 namespace WildlifeTracker.Data.Repositories
 {
-    public class Repository<T> : IRepository<T> where T : class
+    public class Repository<T>(ApplicationDbContext context) : IRepository<T> where T : class
     {
-        private readonly ApplicationDbContext _context;
-        private readonly DbSet<T> _dbSet;
-
-        public Repository(ApplicationDbContext context)
-        {
-            this._context = context;
-            this._dbSet = context.Set<T>();
-        }
+        private readonly DbSet<T> _dbSet = context.Set<T>();
 
         public async Task<IEnumerable<T>> GetAllAsNoTrackingAsync()
         {
@@ -34,13 +28,13 @@ namespace WildlifeTracker.Data.Repositories
         public async Task AddAsync(T entity)
         {
             await this._dbSet.AddAsync(entity);
-            await this._context.SaveChangesAsync();
+            await context.SaveChangesAsync();
         }
 
         public async Task UpdateAsync(T entity)
         {
             this._dbSet.Update(entity);
-            await this._context.SaveChangesAsync();
+            await context.SaveChangesAsync();
         }
 
         public async Task DeleteAsync(int id)
@@ -49,21 +43,19 @@ namespace WildlifeTracker.Data.Repositories
             if (entity != null)
             {
                 this._dbSet.Remove(entity);
-                await this._context.SaveChangesAsync();
+                await context.SaveChangesAsync();
             }
         }
 
         public async Task<IEnumerable<T>> SearchAsync(Dictionary<string, string> filters)
         {
-            IQueryable<T> query = this._context.Set<T>();
+            IQueryable<T> query = context.Set<T>();
 
             foreach (var filter in filters)
             {
-                var (propertyName, op) = this.ParsePropertyAndOperator(filter.Key);
-                var property = typeof(T).GetProperty(propertyName, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
-                if (property == null)
-                    throw new ArgumentException($"The property {propertyName} is not defined for the entity {typeof(T).Name}");
-
+                var (propertyName, op) = ParsePropertyAndOperator(filter.Key);
+                var property = typeof(T).GetProperty(propertyName, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance)
+                    ?? throw new ValidationException($"The property {propertyName} is not defined for the entity {typeof(T).Name}");
                 var parameter = Expression.Parameter(typeof(T), "x");
                 var propertyAccess = Expression.Property(parameter, property);
 
@@ -77,7 +69,7 @@ namespace WildlifeTracker.Data.Repositories
                 }
                 catch
                 {
-                    throw new ArgumentException("Type conversion failed");
+                    throw new ValidationException("Type conversion failed");
                 }
 
                 Expression comparison;
@@ -96,12 +88,12 @@ namespace WildlifeTracker.Data.Repositories
                                 nameof(string.Contains), null,
                                 Expression.Constant(filter.Value.ToLower())
                             ),
-                        _ => throw new ArgumentException($"Unsupported operator '{op}' for property '{propertyName}'")
+                        _ => throw new ValidationException($"Unsupported operator '{op}' for property '{propertyName}'")
                     };
                 }
                 catch (InvalidOperationException ex)
                 {
-                    throw new ArgumentException($"The operator is not defined for the property '{propertyName}'", ex);
+                    throw new ValidationException($"The operator is not defined for the property '{propertyName}'", ex);
                 }
 
                 var lambda = Expression.Lambda<Func<T, bool>>(comparison, parameter);
@@ -111,7 +103,7 @@ namespace WildlifeTracker.Data.Repositories
             return await query.ToListAsync();
         }
 
-        private (string property, string op) ParsePropertyAndOperator(string key)
+        private static (string property, string op) ParsePropertyAndOperator(string key)
         {
             var parts = key.Split("__", 2); // e.g., name__icontains
 
@@ -120,7 +112,7 @@ namespace WildlifeTracker.Data.Repositories
             else if (parts.Length == 2)
                 return (parts[0], parts[1]);
             else
-                throw new ArgumentException($"Invalid number of arguments ({parts}) for filter '{key}'");
+                throw new ValidationException($"Invalid number of arguments ({parts}) for filter '{key}'");
         }
     }
 }
