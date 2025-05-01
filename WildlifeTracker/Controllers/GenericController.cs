@@ -18,10 +18,16 @@ namespace WildlifeTracker.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] Dictionary<string, string> queryParams)
         {
-            var items = await this._repository.GetAllAsync();
-            return this.Ok(items);
+            // TODO: Add functionality that allows the user to choose what the API should return. (e.g. /api/v1/animal?fields=species,age)
+
+            IEnumerable<T> results;
+            if (!queryParams.Any())
+                results = await this._repository.GetAllAsNoTrackingAsync();
+            else
+                results = await this._repository.SearchAsync(queryParams);
+            return this.Ok(results);
         }
 
         [HttpGet("{id}")]
