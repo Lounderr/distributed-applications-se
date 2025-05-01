@@ -1,16 +1,11 @@
-using Microsoft.AspNetCore.Mvc;
-
-using WildlifeTracker.Data;
-
-using YourNamespace.Data.Models;
+using WildlifeTracker.Data.Models;
+using WildlifeTracker.Data.Repositories;
 
 namespace WildlifeTracker.Controllers
 {
-    [ApiController]
-    [Route("api/[controller]")]
     public class HabitatController : GenericController<Habitat>
     {
-        public HabitatController(ApplicationDbContext context) : base(context)
+        public HabitatController(IRepository<Habitat> repository) : base(repository)
         {
         }
     }

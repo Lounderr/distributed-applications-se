@@ -1,63 +1,63 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-using WildlifeTracker.Data;
+using WildlifeTracker.Data.Repositories;
 
 namespace WildlifeTracker.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
-    public class GenericController<T> : ControllerBase where T : class
+    [Authorize]
+    [Route("api/v{version:apiVersion}/[controller]")]
+    public abstract class GenericController<T> : ControllerBase where T : class
     {
-        private readonly List<T> _items = new();
-        private readonly ApplicationDbContext context;
+        private readonly IRepository<T> _repository;
 
-        public GenericController(ApplicationDbContext context)
+        public GenericController(IRepository<T> repository)
         {
-            this.context = context;
+            this._repository = repository;
         }
 
         [HttpGet]
-        public IActionResult GetAll()
+        public async Task<IActionResult> GetAll()
         {
-            return this.Ok(this._items);
+            var items = await this._repository.GetAllAsync();
+            return this.Ok(items);
         }
 
         [HttpGet("{id}")]
-        public IActionResult GetById(int id)
+        public async Task<IActionResult> GetById(int id)
         {
-            if (id < 0 || id >= this._items.Count)
+            var item = await this._repository.GetByIdAsync(id);
+            if (item == null)
                 return this.NotFound();
 
-            return this.Ok(this._items[id]);
+            return this.Ok(item);
         }
 
         [HttpPost]
-        public IActionResult Create([FromBody] T item)
+        public async Task<IActionResult> Create([FromBody] T item)
         {
             if (item == null)
                 return this.BadRequest();
 
-            this._items.Add(item);
-            return this.CreatedAtAction(nameof(GetById), new { id = this._items.Count - 1 }, item);
+            await this._repository.AddAsync(item);
+            return this.CreatedAtAction(nameof(GetById), new { id = item }, item);
         }
 
         [HttpPut("{id}")]
-        public IActionResult Update(int id, [FromBody] T item)
+        public async Task<IActionResult> Update(int id, [FromBody] T item)
         {
-            if (id < 0 || id >= this._items.Count || item == null)
+            if (item == null)
                 return this.BadRequest();
 
-            this._items[id] = item;
+            await this._repository.UpdateAsync(item);
             return this.NoContent();
         }
 
         [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            if (id < 0 || id >= this._items.Count)
-                return this.NotFound();
-
-            this._items.RemoveAt(id);
+            await this._repository.DeleteAsync(id);
             return this.NoContent();
         }
     }
