@@ -14,17 +14,18 @@ namespace WildlifeTracker.Controllers
     public abstract class GenericController<T>(IRepository<T> repository) : ControllerBase
         where T : class, IIdentifiable
     {
+        // TODO: /api/v1/animal?page=0&size=10&fields=species,age&filter=species_gt_dog
+        // Change filtering logic
+        // Allow selecting fields to be returned
         [HttpGet]
-        public virtual async Task<IActionResult> GetAll([FromQuery] int page, [FromQuery] int size, [FromQuery] Dictionary<string, string> queryParams)
+        public virtual async Task<IActionResult> GetAll([FromQuery] int page, [FromQuery] int size, [FromQuery] string? filter)
         {
-            // TODO: Add functionality that allows the user to choose what the API should return. (e.g. /api/v1/animal?fields=species,age)
-            // TODO: Add pagination functionality (e.g. /api/v1/animal?page=1&size=10)
-
             IEnumerable<T> results;
 
             try
             {
-                results = await repository.SearchAsync(page, size, queryParams.Skip(2).ToDictionary());
+                string[]? filters = filter?.Split(",", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.RemoveEmptyEntries);
+                results = await repository.SearchAsync(page, size, filters);
             }
             catch (ArgumentException ex)
             {

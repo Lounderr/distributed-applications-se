@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using System.Reflection;
 
 using Microsoft.EntityFrameworkCore;
@@ -54,31 +53,54 @@ namespace WildlifeTracker.Data.Repositories
             }
         }
 
-        public async Task<IEnumerable<T>> SearchAsync(int pageNumber, int pageSize, Dictionary<string, string> filters)
+        public async Task<IEnumerable<T>> SearchAsync(int pageNumber, int pageSize, IEnumerable<string>? filters)
         {
             this.ValidatePageParameters(pageNumber, pageSize);
+
+            if (filters == null)
+                filters = [];
 
             IQueryable<T> query = context.Set<T>();
 
             foreach (var filter in filters)
             {
-                var (propertyName, op) = ParsePropertyAndOperator(filter.Key);
+                var parts = filter.Split(":", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                if (parts.Length != 3)
+                {
+                    throw new ArgumentException($"Invalid filter format: {filter}. Expected format: 'property:operator:value'");
+                }
+
+                var propertyName = parts[0];
+                var op = parts[1];
+                bool hasNot = false;
+
+                const string notOperator = "n";
+
+                if (op.StartsWith(notOperator))
+                {
+                    op = op.Substring(notOperator.Length);
+                    hasNot = true;
+                }
+
+                var value = parts[2];
+
                 var property = typeof(T).GetProperty(propertyName, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance)
                     ?? throw new ArgumentException($"The property {propertyName} is not defined for the entity {typeof(T).Name}", propertyName);
                 var parameter = Expression.Parameter(typeof(T), "x");
                 var propertyAccess = Expression.Property(parameter, property);
 
                 object convertedValue;
+
                 try
                 {
                     convertedValue = Convert.ChangeType(
-                        filter.Value,
+                        value,
                         Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType
                     );
                 }
                 catch
                 {
-                    throw new ArgumentException("Type conversion failed", filter.Value);
+                    throw new ArgumentException($"Type conversion failed for value '{value}' of property '{propertyName}'");
                 }
 
                 Expression comparison;
@@ -88,14 +110,16 @@ namespace WildlifeTracker.Data.Repositories
                     {
                         "eq" => Expression.Equal(propertyAccess, Expression.Constant(convertedValue, property.PropertyType)),
                         "gt" => Expression.GreaterThan(propertyAccess, Expression.Constant(convertedValue, property.PropertyType)),
+                        "ge" => Expression.GreaterThanOrEqual(propertyAccess, Expression.Constant(convertedValue, property.PropertyType)),
                         "lt" => Expression.LessThan(propertyAccess, Expression.Constant(convertedValue, property.PropertyType)),
+                        "le" => Expression.LessThanOrEqual(propertyAccess, Expression.Constant(convertedValue, property.PropertyType)),
                         "contains" when property.PropertyType == typeof(string) =>
-                            Expression.Call(propertyAccess, nameof(string.Contains), null, Expression.Constant(filter.Value)),
+                            Expression.Call(propertyAccess, nameof(string.Contains), null, Expression.Constant(value)),
                         "icontains" when property.PropertyType == typeof(string) =>
                             Expression.Call(
                                 Expression.Call(propertyAccess, nameof(string.ToLower), null),
                                 nameof(string.Contains), null,
-                                Expression.Constant(filter.Value.ToLower())
+                                Expression.Constant(value.ToLower())
                             ),
                         _ => throw new ArgumentException($"Unsupported operator '{op}' for property '{propertyName}'", propertyName)
                     };
@@ -105,23 +129,16 @@ namespace WildlifeTracker.Data.Repositories
                     throw new ArgumentException($"The operator is not defined for the property '{propertyName}'", propertyName, ex);
                 }
 
+                if (hasNot)
+                {
+                    comparison = Expression.Not(comparison);
+                }
+
                 var lambda = Expression.Lambda<Func<T, bool>>(comparison, parameter);
                 query = query.Where(lambda);
             }
 
             return await query.Skip(pageNumber * pageSize).Take(pageSize).ToListAsync();
-        }
-
-        private static (string property, string op) ParsePropertyAndOperator(string key)
-        {
-            var parts = key.Split("__", 2); // e.g., name__icontains
-
-            if (parts.Length == 1)
-                return (parts[0], "eq");
-            else if (parts.Length == 2)
-                return (parts[0], parts[1]);
-            else
-                throw new ValidationException($"Invalid number of arguments ({parts}) for filter '{key}'");
         }
 
         private void ValidatePageParameters(int pageNumber, int pageSize)

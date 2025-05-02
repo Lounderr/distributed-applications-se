@@ -27,7 +27,6 @@ namespace WildlifeTracker.Data.Seeding
                new() { Name = "Tundra", Location = "Arctic", Size = 1200.0, Climate = "Cold", AverageTemperature = -10.0 },
                new() { Name = "Grassland", Location = "North America", Size = 3000.0, Climate = "Temperate", AverageTemperature = 20.0 }
             };
-            // identity dob
 
             dbContext.Habitats.AddRange(habitats);
 
