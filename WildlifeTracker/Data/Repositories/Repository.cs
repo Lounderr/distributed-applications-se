@@ -53,7 +53,7 @@ namespace WildlifeTracker.Data.Repositories
             }
         }
 
-        public async Task<IEnumerable<T>> SearchAsync(int pageNumber, int pageSize, IEnumerable<string>? filters)
+        public async Task<IEnumerable<object>> SearchAsync(int pageNumber, int pageSize, IEnumerable<string>? filters, string[]? fields)
         {
             this.ValidatePageParameters(pageNumber, pageSize);
 
@@ -85,7 +85,7 @@ namespace WildlifeTracker.Data.Repositories
                 var value = parts[2];
 
                 var property = typeof(T).GetProperty(propertyName, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance)
-                    ?? throw new ArgumentException($"The property {propertyName} is not defined for the entity {typeof(T).Name}", propertyName);
+                    ?? throw new ArgumentException($"The property '{propertyName}' is not defined for the entity '{typeof(T).Name}'", propertyName);
                 var parameter = Expression.Parameter(typeof(T), "x");
                 var propertyAccess = Expression.Property(parameter, property);
 
@@ -106,7 +106,7 @@ namespace WildlifeTracker.Data.Repositories
                 Expression comparison;
                 try
                 {
-                    comparison = op switch
+                    comparison = op.ToLower() switch
                     {
                         "eq" => Expression.Equal(propertyAccess, Expression.Constant(convertedValue, property.PropertyType)),
                         "gt" => Expression.GreaterThan(propertyAccess, Expression.Constant(convertedValue, property.PropertyType)),
@@ -138,7 +138,17 @@ namespace WildlifeTracker.Data.Repositories
                 query = query.Where(lambda);
             }
 
-            return await query.Skip(pageNumber * pageSize).Take(pageSize).ToListAsync();
+            var data = await query.Skip(pageNumber * pageSize).Take(pageSize).ToListAsync();
+
+            if (fields != null)
+            {
+                return data.Select(x => fields.ToDictionary(
+                    propName => propName,
+                    propName => x.GetType().GetProperty(propName, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance)?.GetValue(x)
+                    ?? throw new ArgumentException($"The property '{propName}' is not defined for the entity '{typeof(T).Name}'", propName)
+                )).ToList();
+            }
+            return data;
         }
 
         private void ValidatePageParameters(int pageNumber, int pageSize)

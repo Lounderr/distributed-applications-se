@@ -18,20 +18,18 @@ namespace WildlifeTracker.Controllers
         // Change filtering logic
         // Allow selecting fields to be returned
         [HttpGet]
-        public virtual async Task<IActionResult> GetAll([FromQuery] int page, [FromQuery] int size, [FromQuery] string? filter)
+        public virtual async Task<IActionResult> GetAll([FromQuery] int page, [FromQuery] int size, [FromQuery] string? filters, [FromQuery] string? fields)
         {
-            IEnumerable<T> results;
-
             try
             {
-                string[]? filters = filter?.Split(",", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.RemoveEmptyEntries);
-                results = await repository.SearchAsync(page, size, filters);
+                string[]? filtersArr = filters?.Split(",", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                string[]? fieldsArr = fields?.Split(",", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                return this.Ok(await repository.SearchAsync(page, size, filtersArr, fieldsArr));
             }
             catch (ArgumentException ex)
             {
                 throw new CustomValidationException(ErrorCodes.SearchParamsInvalid, ex.Message);
             }
-            return this.Ok(results);
         }
 
         [HttpGet("{id}")]

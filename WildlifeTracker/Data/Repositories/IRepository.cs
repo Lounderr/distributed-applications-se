@@ -27,7 +27,7 @@ namespace WildlifeTracker.Data.Repositories
         /// <returns>
         /// A task that represents the asynchronous operation. The task result contains a collection of matching entities.
         /// </returns>
-        Task<IEnumerable<T>> SearchAsync(int pageNumber, int pageSize, IEnumerable<string>? filters);
+        Task<IEnumerable<object>> SearchAsync(int pageNumber, int pageSize, IEnumerable<string>? filters, string[]? fieldsArr);
         Task UpdateAsync(T entity);
     }
 }
