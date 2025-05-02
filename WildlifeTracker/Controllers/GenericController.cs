@@ -1,15 +1,18 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
+using WildlifeTracker.Constants;
 using WildlifeTracker.Data.Models.Interfaces;
 using WildlifeTracker.Data.Repositories;
+using WildlifeTracker.Exceptions;
 
 namespace WildlifeTracker.Controllers
 {
     [ApiController]
     [Authorize]
     [Route("api/v{version:apiVersion}/[controller]")]
-    public abstract class GenericController<T>(IRepository<T> repository) : ControllerBase where T : class, IIdentifiable
+    public abstract class GenericController<T>(IRepository<T> repository) : ControllerBase
+        where T : class, IIdentifiable
     {
         [HttpGet]
         public virtual async Task<IActionResult> GetAll([FromQuery] Dictionary<string, string> queryParams)
@@ -21,7 +24,14 @@ namespace WildlifeTracker.Controllers
             if (queryParams.Count == 0)
                 results = await repository.GetAllAsNoTrackingAsync();
             else
-                results = await repository.SearchAsync(queryParams);
+                try
+                {
+                    results = await repository.SearchAsync(queryParams);
+                }
+                catch (ArgumentException ex)
+                {
+                    throw new CustomValidationException(ErrorCodes.SearchParamsInvalid, ex.Message);
+                }
             return this.Ok(results);
         }
 

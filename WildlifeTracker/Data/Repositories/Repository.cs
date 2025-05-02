@@ -55,7 +55,7 @@ namespace WildlifeTracker.Data.Repositories
             {
                 var (propertyName, op) = ParsePropertyAndOperator(filter.Key);
                 var property = typeof(T).GetProperty(propertyName, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance)
-                    ?? throw new ValidationException($"The property {propertyName} is not defined for the entity {typeof(T).Name}");
+                    ?? throw new ArgumentException($"The property {propertyName} is not defined for the entity {typeof(T).Name}", propertyName);
                 var parameter = Expression.Parameter(typeof(T), "x");
                 var propertyAccess = Expression.Property(parameter, property);
 
@@ -69,7 +69,7 @@ namespace WildlifeTracker.Data.Repositories
                 }
                 catch
                 {
-                    throw new ValidationException("Type conversion failed");
+                    throw new ArgumentException("Type conversion failed", filter.Value);
                 }
 
                 Expression comparison;
@@ -88,12 +88,12 @@ namespace WildlifeTracker.Data.Repositories
                                 nameof(string.Contains), null,
                                 Expression.Constant(filter.Value.ToLower())
                             ),
-                        _ => throw new ValidationException($"Unsupported operator '{op}' for property '{propertyName}'")
+                        _ => throw new ArgumentException($"Unsupported operator '{op}' for property '{propertyName}'", propertyName)
                     };
                 }
                 catch (InvalidOperationException ex)
                 {
-                    throw new ValidationException($"The operator is not defined for the property '{propertyName}'", ex);
+                    throw new ArgumentException($"The operator is not defined for the property '{propertyName}'", propertyName, ex);
                 }
 
                 var lambda = Expression.Lambda<Func<T, bool>>(comparison, parameter);

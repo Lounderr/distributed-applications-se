@@ -9,7 +9,7 @@ using WildlifeTracker.Data.Models.Interfaces;
 
 namespace WildlifeTracker.Data
 {
-    public class ApplicationDbContext : IdentityDbContext<IdentityUser>
+    public class ApplicationDbContext : IdentityDbContext<User>
     {
         private static readonly MethodInfo SetIsDeletedQueryFilterMethod =
             typeof(ApplicationDbContext).GetMethod(
@@ -59,9 +59,27 @@ namespace WildlifeTracker.Data
                 .IsRequired();
 
             modelBuilder.Entity<Sighting>()
-              .Property(s => s.Notes)
-              .HasMaxLength(100)
-              .IsRequired();
+                .Property(s => s.Notes)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            modelBuilder.Entity<Sighting>()
+                .HasOne(s => s.Observer)
+                .WithMany(u => u.Sightings);
+
+            modelBuilder.Entity<User>()
+                .Property(u => u.FirstName)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            modelBuilder.Entity<User>()
+                .Property(u => u.LastName)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            modelBuilder.Entity<User>()
+                .Property(u => u.City)
+                .HasMaxLength(100);
 
             var entityTypes = modelBuilder.Model.GetEntityTypes().ToList();
 
@@ -122,7 +140,7 @@ namespace WildlifeTracker.Data
 
         private void ConfigureIdentityTables(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<IdentityUser>(b => b.ToTable("Users", "identity"));
+            modelBuilder.Entity<User>(b => b.ToTable("Users", "identity"));
             modelBuilder.Entity<IdentityRole>(b => b.ToTable("Roles", "identity"));
             modelBuilder.Entity<IdentityUserRole<string>>(b => b.ToTable("UserRoles", "identity"));
             modelBuilder.Entity<IdentityUserClaim<string>>(b => b.ToTable("UserClaims", "identity"));
