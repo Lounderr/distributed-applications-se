@@ -35,8 +35,8 @@ namespace WildlifeTracker.Data.Seeding
 
             var users = new List<User>
             {
-                new() { UserName = "user@mailinator.com", FirstName = "John", LastName = "Doe", DateOfBirth = new DateTime(1985, 5, 15), City = "Sofia", Email = "user@mailinator.com", EmailConfirmed = true },
-                new() { UserName = "curious.observer@mailinator.com", FirstName = "Jane", LastName = "Smith", DateOfBirth = new DateTime(1990, 8, 20), City = "Plovdiv", Email = "curious.observer@mailinator.com", EmailConfirmed = true }
+                new() { UserName = "user@mailinator.com", FirstName = "John", LastName = "Doe", DateOfBirth = new DateOnly(1985, 5, 15), City = "Sofia", Email = "user@mailinator.com", EmailConfirmed = true },
+                new() { UserName = "curious.observer@mailinator.com", FirstName = "Jane", LastName = "Smith", DateOfBirth = new DateOnly(1990, 8, 20), City = "Plovdiv", Email = "curious.observer@mailinator.com", EmailConfirmed = true }
             };
 
 

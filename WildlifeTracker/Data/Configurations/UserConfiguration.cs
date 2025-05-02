@@ -34,8 +34,8 @@ namespace WildlifeTracker.Data.Configurations
                 .IsUnicode(false)
                 .HasMaxLength(16);
 
-            builder.Property(u => u.DateOfBirth)
-                .HasColumnType("date");
+            //builder.Property(u => u.DateOfBirth)
+            //    .HasColumnType("date");
 
             builder.ToTable(tb =>
             {
