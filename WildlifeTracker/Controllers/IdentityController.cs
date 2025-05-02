@@ -41,6 +41,7 @@ namespace WildlifeTracker.Controllers
                 Email = registration.Email,
                 FirstName = registration.FirstName,
                 LastName = registration.LastName,
+                DateOfBirth = registration.DateOfBirth,
                 City = registration.City
             };
 

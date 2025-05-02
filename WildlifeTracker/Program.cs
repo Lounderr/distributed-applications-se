@@ -5,11 +5,13 @@ using Asp.Versioning;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 
 using WildlifeTracker.Data;
 using WildlifeTracker.Data.Models;
 using WildlifeTracker.Data.Repositories;
+using WildlifeTracker.Data.Seeding;
 using WildlifeTracker.Helpers;
 using WildlifeTracker.Middleware;
 
@@ -95,6 +97,7 @@ namespace WildlifeTracker
 
             app.UseMiddleware<CustomExceptionHandlerMiddleware>();
             app.UseStaticFiles();
+
             // Ensure database is deleted and created until adding migrations  
             using (var scope = app.Services.CreateScope())
             {
@@ -102,7 +105,7 @@ namespace WildlifeTracker
                 dbContext.Database.EnsureDeleted();
                 dbContext.Database.EnsureCreated();
 
-                // TODO: Add seeding logic here
+                new ApplicationDbContextSeeder().SeedDatabase(dbContext, scope.ServiceProvider);
             }
 
             // Configure the HTTP request pipeline.  

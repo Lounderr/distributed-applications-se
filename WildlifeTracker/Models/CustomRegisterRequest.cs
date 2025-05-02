@@ -13,5 +13,6 @@ namespace WildlifeTracker.Models
         [DefaultValue("Test123!")]
         public required string Password { get; set; }
         public string? City { get; set; }
+        public DateTime DateOfBirth { get; set; }
     }
 }
