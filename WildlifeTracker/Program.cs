@@ -5,7 +5,6 @@ using Asp.Versioning;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 
 using WildlifeTracker.Data;
@@ -96,6 +95,7 @@ namespace WildlifeTracker
             var app = builder.Build();
 
             app.UseMiddleware<CustomExceptionHandlerMiddleware>();
+            app.UseMiddleware<ResponseWrapperMiddleware>();
             app.UseStaticFiles();
 
             // Ensure database is deleted and created until adding migrations  

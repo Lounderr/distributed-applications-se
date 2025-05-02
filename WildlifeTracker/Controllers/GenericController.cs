@@ -15,23 +15,21 @@ namespace WildlifeTracker.Controllers
         where T : class, IIdentifiable
     {
         [HttpGet]
-        public virtual async Task<IActionResult> GetAll([FromQuery] Dictionary<string, string> queryParams)
+        public virtual async Task<IActionResult> GetAll([FromQuery] int page, [FromQuery] int size, [FromQuery] Dictionary<string, string> queryParams)
         {
             // TODO: Add functionality that allows the user to choose what the API should return. (e.g. /api/v1/animal?fields=species,age)
             // TODO: Add pagination functionality (e.g. /api/v1/animal?page=1&size=10)
 
             IEnumerable<T> results;
-            if (queryParams.Count == 0)
-                results = await repository.GetAllAsNoTrackingAsync();
-            else
-                try
-                {
-                    results = await repository.SearchAsync(queryParams);
-                }
-                catch (ArgumentException ex)
-                {
-                    throw new CustomValidationException(ErrorCodes.SearchParamsInvalid, ex.Message);
-                }
+
+            try
+            {
+                results = await repository.SearchAsync(page, size, queryParams.Skip(2).ToDictionary());
+            }
+            catch (ArgumentException ex)
+            {
+                throw new CustomValidationException(ErrorCodes.SearchParamsInvalid, ex.Message);
+            }
             return this.Ok(results);
         }
 

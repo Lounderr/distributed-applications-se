@@ -4,20 +4,27 @@ using System.Reflection;
 
 using Microsoft.EntityFrameworkCore;
 
+using WildlifeTracker.Constants;
+using WildlifeTracker.Exceptions;
+
 namespace WildlifeTracker.Data.Repositories
 {
     public class Repository<T>(ApplicationDbContext context) : IRepository<T> where T : class
     {
         private readonly DbSet<T> _dbSet = context.Set<T>();
 
-        public async Task<IEnumerable<T>> GetAllAsNoTrackingAsync()
+        public async Task<IEnumerable<T>> GetAllAsNoTrackingAsync(int pageNumber, int pageSize)
         {
-            return await this._dbSet.AsNoTracking().ToListAsync();
+            this.ValidatePageParameters(pageNumber, pageSize);
+
+            return await this._dbSet.AsNoTracking().Skip(pageNumber * pageSize).Take(pageSize).ToListAsync();
         }
 
-        public async Task<IEnumerable<T>> GetAllAsync()
+        public async Task<IEnumerable<T>> GetAllAsync(int pageNumber, int pageSize)
         {
-            return await this._dbSet.ToListAsync();
+            this.ValidatePageParameters(pageNumber, pageSize);
+
+            return await this._dbSet.Skip(pageNumber * pageSize).Take(pageSize).ToListAsync();
         }
 
         public async Task<T?> GetByIdAsync(int id)
@@ -47,8 +54,10 @@ namespace WildlifeTracker.Data.Repositories
             }
         }
 
-        public async Task<IEnumerable<T>> SearchAsync(Dictionary<string, string> filters)
+        public async Task<IEnumerable<T>> SearchAsync(int pageNumber, int pageSize, Dictionary<string, string> filters)
         {
+            this.ValidatePageParameters(pageNumber, pageSize);
+
             IQueryable<T> query = context.Set<T>();
 
             foreach (var filter in filters)
@@ -100,7 +109,7 @@ namespace WildlifeTracker.Data.Repositories
                 query = query.Where(lambda);
             }
 
-            return await query.ToListAsync();
+            return await query.Skip(pageNumber * pageSize).Take(pageSize).ToListAsync();
         }
 
         private static (string property, string op) ParsePropertyAndOperator(string key)
@@ -113,6 +122,19 @@ namespace WildlifeTracker.Data.Repositories
                 return (parts[0], parts[1]);
             else
                 throw new ValidationException($"Invalid number of arguments ({parts}) for filter '{key}'");
+        }
+
+        private void ValidatePageParameters(int pageNumber, int pageSize)
+        {
+            if (pageNumber < 0)
+            {
+                throw new CustomValidationException(ErrorCodes.InvalidPageNumber, "The page number must be greater or equal to 0");
+            }
+
+            if (pageSize < 0 || 1000 < pageSize)
+            {
+                throw new CustomValidationException(ErrorCodes.InvalidPageSize, "The page size must be between 0 and 1000");
+            }
         }
     }
 }

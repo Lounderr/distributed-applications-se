@@ -1,13 +1,14 @@
-﻿namespace WildlifeTracker.Data.Repositories
+﻿
+
+namespace WildlifeTracker.Data.Repositories
 {
     public interface IRepository<T> where T : class
     {
-        Task<IEnumerable<T>> GetAllAsNoTrackingAsync();
-        Task<IEnumerable<T>> GetAllAsync();
-        Task<T?> GetByIdAsync(int id);
         Task AddAsync(T entity);
-        Task UpdateAsync(T entity);
         Task DeleteAsync(int id);
+        Task<IEnumerable<T>> GetAllAsNoTrackingAsync(int pageNumber, int pageSize);
+        Task<IEnumerable<T>> GetAllAsync(int pageNumber, int pageSize);
+        Task<T?> GetByIdAsync(int id);
 
         /// <summary>
         /// Asynchronously searches for entities of type <typeparamref name="T"/> based on dynamic filters provided as a dictionary.
@@ -26,7 +27,7 @@
         /// <returns>
         /// A task that represents the asynchronous operation. The task result contains a collection of matching entities.
         /// </returns>
-
-        Task<IEnumerable<T>> SearchAsync(Dictionary<string, string> filters);
+        Task<IEnumerable<T>> SearchAsync(int pageNumber, int pageSize, Dictionary<string, string> filters);
+        Task UpdateAsync(T entity);
     }
 }
