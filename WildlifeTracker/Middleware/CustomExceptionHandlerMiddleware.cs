@@ -33,7 +33,7 @@ namespace WildlifeTracker.Middleware
 
             ValidationProblemDetails problemDetails = exception switch
             {
-                CustomValidationException validationException => HandleValidationException(validationException, response, logger),
+                BusinessException validationException => HandleValidationException(validationException, response, logger),
                 _ => HandleInternalServerError(exception, response, logger)
             };
 
@@ -51,10 +51,10 @@ namespace WildlifeTracker.Middleware
             return;
         }
 
-        private static ValidationProblemDetails HandleValidationException(CustomValidationException validationException, HttpResponse response, ILogger logger)
+        private static ValidationProblemDetails HandleValidationException(BusinessException validationException, HttpResponse response, ILogger logger)
         {
             logger.LogWarning(validationException, validationException.ProblemDetails.Title);
-            response.StatusCode = (int)HttpStatusCode.UnprocessableEntity;
+            response.StatusCode = validationException.ProblemDetails.Status ?? 400;
             return validationException.ProblemDetails;
         }
 

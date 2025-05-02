@@ -27,12 +27,12 @@ namespace WildlifeTracker.Controllers
         {
             if (!userManager.SupportsUserEmail)
             {
-                return this.BadRequest("User store must support email.");
+                throw new NotSupportedException("User store must support email");
             }
 
             if (string.IsNullOrEmpty(registration.Email) || !_emailAddressAttribute.IsValid(registration.Email))
             {
-                throw new CustomValidationException(ErrorCodes.EmailInvalid, "The email provided is invalid");
+                throw new BusinessException(ErrorCodes.EmailInvalid, "The email provided is invalid");
             }
 
             var user = new User
@@ -48,7 +48,7 @@ namespace WildlifeTracker.Controllers
             var result = await userManager.CreateAsync(user, registration.Password);
             if (!result.Succeeded)
             {
-                throw new CustomValidationException(result);
+                throw new BusinessException(result);
             }
 
             return this.Ok();
@@ -63,7 +63,7 @@ namespace WildlifeTracker.Controllers
 
             if (!result.Succeeded)
             {
-                return this.Unauthorized(result.ToString());
+                throw new UnauthorizedException(result.ToString());
             }
 
             return this.Ok();
@@ -79,7 +79,7 @@ namespace WildlifeTracker.Controllers
                 timeProvider.GetUtcNow() >= expiresUtc ||
                 await signInManager.ValidateSecurityStampAsync(refreshTicket.Principal) is not User user)
             {
-                return this.Unauthorized();
+                throw new UnauthorizedException("Refresh token is invalid");
             }
 
             var newPrincipal = await signInManager.CreateUserPrincipalAsync(user);

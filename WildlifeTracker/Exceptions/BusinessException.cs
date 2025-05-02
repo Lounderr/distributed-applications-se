@@ -3,19 +3,19 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace WildlifeTracker.Exceptions
 {
-    public class CustomValidationException : ApplicationException
+    public class BusinessException : ApplicationException
     {
         public ValidationProblemDetails ProblemDetails { get; }
 
-        public CustomValidationException(IDictionary<string, string[]> errorsDictionary)
+        public BusinessException(IDictionary<string, string[]> errorsDictionary)
             : base($"Field validation error occurred") =>
             this.ProblemDetails = CreateValidationProblem(errorsDictionary);
 
-        public CustomValidationException(IdentityResult result)
+        public BusinessException(IdentityResult result)
             : base("Identity validation error occurred") =>
             this.ProblemDetails = CreateValidationProblem(result);
 
-        public CustomValidationException(string errorCode, string errorDescription)
+        public BusinessException(string errorCode, string errorDescription)
             : base($"General business error: {errorCode} - {errorDescription}") =>
             this.ProblemDetails = CreateGeneralBusinessError(errorCode, errorDescription);
 

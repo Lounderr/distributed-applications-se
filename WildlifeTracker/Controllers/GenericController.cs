@@ -14,21 +14,27 @@ namespace WildlifeTracker.Controllers
     public abstract class GenericController<T>(IRepository<T> repository) : ControllerBase
         where T : class, IIdentifiable
     {
-        // TODO: /api/v1/animal?page=0&size=10&fields=species,age&filter=species_gt_dog
-        // Change filtering logic
-        // Allow selecting fields to be returned
         [HttpGet]
         public virtual async Task<IActionResult> GetAll([FromQuery] int page, [FromQuery] int size, [FromQuery] string? filters, [FromQuery] string? fields)
         {
+            // TODO: Move data processing into services and clean up repositories
+            // TODO: Add DTOs
+            // TODO: Add input validation and store phone numbers
+            // TODO: Add user list GET (last login / refresh
+
+            if (size == 0)
+                size = 15;
+
+            string[]? filtersArr = filters?.Split(",", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            string[]? fieldsArr = fields?.Split(",", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
             try
             {
-                string[]? filtersArr = filters?.Split(",", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-                string[]? fieldsArr = fields?.Split(",", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
                 return this.Ok(await repository.SearchAsync(page, size, filtersArr, fieldsArr));
             }
             catch (ArgumentException ex)
             {
-                throw new CustomValidationException(ErrorCodes.SearchParamsInvalid, ex.Message);
+                throw new BusinessException(ErrorCodes.SearchParamsInvalid, ex.Message);
             }
         }
 
@@ -37,7 +43,7 @@ namespace WildlifeTracker.Controllers
         {
             var item = await repository.GetByIdAsync(id);
             if (item == null)
-                return this.NotFound();
+                throw new NotFoundException($"Entity {typeof(T).Name} with id {id} not found");
 
             return this.Ok(item);
         }
@@ -45,9 +51,6 @@ namespace WildlifeTracker.Controllers
         [HttpPost]
         public virtual async Task<IActionResult> Create([FromBody] T item)
         {
-            if (item == null)
-                return this.BadRequest();
-
             await repository.AddAsync(item);
             return this.CreatedAtAction(nameof(GetById), new { id = item.Id }, item);
         }
@@ -55,15 +58,12 @@ namespace WildlifeTracker.Controllers
         [HttpPut("{id}")]
         public virtual async Task<IActionResult> Update(int id, [FromBody] T item)
         {
-            if (item == null)
-                return this.BadRequest();
-
             if (id != item.Id)
-                return this.BadRequest("The 'id' in the URL does not match the 'Id' of the entity.");
+                throw new BusinessException(ErrorCodes.IdMismatch, "The 'id' in the URL does not match the 'Id' of the entity");
 
             var existingItem = await repository.GetByIdAsync(id);
             if (existingItem == null)
-                return this.NotFound();
+                throw new NotFoundException($"Entity {typeof(T).Name} with id {id} not found");
 
             await repository.UpdateAsync(item);
             return this.NoContent();
