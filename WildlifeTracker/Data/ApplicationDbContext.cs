@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
+using WildlifeTracker.Data.Configurations;
 using WildlifeTracker.Data.Models;
 using WildlifeTracker.Data.Models.Interfaces;
 
@@ -26,60 +27,9 @@ namespace WildlifeTracker.Data
         {
             base.OnModelCreating(modelBuilder);
 
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(UserConfiguration).Assembly);
+
             this.ConfigureIdentityTables(modelBuilder);
-
-            modelBuilder.Entity<Animal>()
-                .Property(a => a.Name)
-                .HasMaxLength(100)
-                .IsRequired();
-
-            modelBuilder.Entity<Animal>()
-                .Property(a => a.Species)
-                .HasMaxLength(100)
-                .IsRequired();
-
-            modelBuilder.Entity<Habitat>()
-                .Property(h => h.Name)
-                .HasMaxLength(100)
-                .IsRequired();
-
-            modelBuilder.Entity<Habitat>()
-                .Property(h => h.Location)
-                .HasMaxLength(100)
-                .IsRequired();
-
-            modelBuilder.Entity<Habitat>()
-                .Property(h => h.Climate)
-                .HasMaxLength(100)
-                .IsRequired();
-
-            modelBuilder.Entity<Sighting>()
-                .Property(s => s.WeatherConditions)
-                .HasMaxLength(100)
-                .IsRequired();
-
-            modelBuilder.Entity<Sighting>()
-                .Property(s => s.Notes)
-                .HasMaxLength(100)
-                .IsRequired();
-
-            modelBuilder.Entity<Sighting>()
-                .HasOne(s => s.Observer)
-                .WithMany(u => u.Sightings);
-
-            modelBuilder.Entity<User>()
-                .Property(u => u.FirstName)
-                .HasMaxLength(100)
-                .IsRequired();
-
-            modelBuilder.Entity<User>()
-                .Property(u => u.LastName)
-                .HasMaxLength(100)
-                .IsRequired();
-
-            modelBuilder.Entity<User>()
-                .Property(u => u.City)
-                .HasMaxLength(100);
 
             var entityTypes = modelBuilder.Model.GetEntityTypes().ToList();
 
@@ -89,7 +39,7 @@ namespace WildlifeTracker.Data
             foreach (var deletableEntityType in deletableEntityTypes)
             {
                 var method = SetIsDeletedQueryFilterMethod.MakeGenericMethod(deletableEntityType.ClrType);
-                method.Invoke(null, new object[] { modelBuilder });
+                method.Invoke(null, [modelBuilder]);
             }
 
             // Disable cascade delete

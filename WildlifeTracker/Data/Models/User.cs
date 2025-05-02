@@ -9,6 +9,6 @@ namespace WildlifeTracker.Data.Models
         public DateTime DateOfBirth { get; set; }
         public string? City { get; set; }
 
-        public virtual ICollection<Sighting> Sightings { get; set; } = new List<Sighting>();
+        public virtual ICollection<Sighting> Sightings { get; set; } = new HashSet<Sighting>();
     }
 }

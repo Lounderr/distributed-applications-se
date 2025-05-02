@@ -7,5 +7,7 @@ namespace WildlifeTracker.Data.Models
         public double Size { get; set; }
         public required string Climate { get; set; }
         public double AverageTemperature { get; set; }
+
+        public virtual ICollection<Sighting> Sightings { get; set; } = new HashSet<Sighting>();
     }
 }
