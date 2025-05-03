@@ -155,12 +155,12 @@ namespace WildlifeTracker.Data.Repositories
         {
             if (pageNumber < 0)
             {
-                throw new BusinessException(ErrorCodes.InvalidPageNumber, "The page number must be greater or equal to 0");
+                throw new ServiceException(ErrorCodes.InvalidPageNumber, "The page number must be greater or equal to 0");
             }
 
             if (pageSize < 0 || 1000 < pageSize)
             {
-                throw new BusinessException(ErrorCodes.InvalidPageSize, "The page size must be between 0 and 1000");
+                throw new ServiceException(ErrorCodes.InvalidPageSize, "The page size must be between 0 and 1000");
             }
         }
     }

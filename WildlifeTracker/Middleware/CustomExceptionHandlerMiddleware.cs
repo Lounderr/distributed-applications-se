@@ -18,7 +18,10 @@ namespace WildlifeTracker.Middleware
             }
             catch (Exception ex)
             {
-                await HandleExceptionAsync(context, ex, logger, jsonSerializerOptions);
+                using (logger.BeginScope("CustomExceptionHandlerMiddleware"))
+                {
+                    await HandleExceptionAsync(context, ex, logger, jsonSerializerOptions);
+                }
             }
         }
 
@@ -28,46 +31,48 @@ namespace WildlifeTracker.Middleware
                 return;
 
             var response = context.Response;
-
             response.ContentType = "application/problem+json";
 
-            ValidationProblemDetails problemDetails = exception switch
-            {
-                BusinessException validationException => HandleValidationException(validationException, response, logger),
-                _ => HandleInternalServerError(exception, response, logger)
-            };
+            ValidationProblemDetails problemDetails = new();
 
-            if (problemDetails != null)
+            if (exception is ServiceException serviceException)
             {
-                problemDetails.Extensions["traceId"] = Activity.Current?.Id ?? context.TraceIdentifier;
-                problemDetails.Extensions["timestamp"] = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ");
-                problemDetails.Instance = context.Request.Path;
+                logger.LogWarning(serviceException, "Service exception occured");
+
+                problemDetails.Title = "One or more business errors have occurred.";
+                problemDetails.Type = "business-error";
+
+                problemDetails.Status = serviceException switch
+                {
+                    NotFoundException => (int)HttpStatusCode.NotFound,
+                    UnauthorizedException => (int)HttpStatusCode.Unauthorized,
+                    _ => (int)HttpStatusCode.UnprocessableEntity
+                };
+
+                problemDetails.Errors = serviceException.Errors.ToDictionary(
+                    kvp => kvp.Key,
+                    kvp => kvp.Value.ToArray()
+                );
             }
+            else
+            {
+                logger.LogError(exception, "Internal server error occured");
+
+                problemDetails.Title = "Internal Server Error";
+                problemDetails.Status = (int)HttpStatusCode.InternalServerError;
+                problemDetails.Type = "internal-server-error";
+                problemDetails.Detail = "An unexpected error occurred. Please try again later.";
+            }
+
+            problemDetails.Extensions["traceId"] = Activity.Current?.Id ?? context.TraceIdentifier;
+            problemDetails.Extensions["timestamp"] = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ");
+            problemDetails.Instance = context.Request.Path;
 
             var result = JsonSerializer.Serialize(problemDetails, jsonSerializerOptions);
 
             await response.WriteAsync(result);
 
             return;
-        }
-
-        private static ValidationProblemDetails HandleValidationException(BusinessException validationException, HttpResponse response, ILogger logger)
-        {
-            logger.LogWarning(validationException, validationException.ProblemDetails.Title);
-            response.StatusCode = validationException.ProblemDetails.Status ?? 400;
-            return validationException.ProblemDetails;
-        }
-
-        private static ValidationProblemDetails HandleInternalServerError(Exception exception, HttpResponse response, ILogger logger)
-        {
-            logger.LogError(exception, "Internal server error");
-            response.StatusCode = (int)HttpStatusCode.InternalServerError;
-            return new ValidationProblemDetails
-            {
-                Title = "Internal Server Error",
-                Status = (int)HttpStatusCode.InternalServerError,
-                Detail = "An unexpected error occurred. Please try again later.",
-            };
         }
     }
 }

@@ -12,7 +12,7 @@ namespace WildlifeTracker.Helpers
             PhoneNumberUtil phoneNumberUtil = PhoneNumberUtil.GetInstance();
             PhoneNumber number;
 
-            var invalidPhoneNumberException = new BusinessException(ErrorCodes.MobileInvalid, "The phone number is invalid");
+            var invalidPhoneNumberException = new ServiceException(ErrorCodes.MobileInvalid, "The phone number is invalid");
 
             try
             {

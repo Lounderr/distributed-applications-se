@@ -32,7 +32,7 @@ namespace WildlifeTracker.Controllers
 
             if (string.IsNullOrEmpty(registration.Email) || !_emailAddressAttribute.IsValid(registration.Email))
             {
-                throw new BusinessException(ErrorCodes.EmailInvalid, "The email provided is invalid");
+                throw new ServiceException(ErrorCodes.EmailInvalid, "The email provided is invalid");
             }
 
             var user = new User
@@ -48,7 +48,7 @@ namespace WildlifeTracker.Controllers
             var result = await userManager.CreateAsync(user, registration.Password);
             if (!result.Succeeded)
             {
-                throw new BusinessException(result);
+                throw new ServiceException(result);
             }
 
             return this.Ok();

@@ -34,7 +34,7 @@ namespace WildlifeTracker.Controllers
             }
             catch (ArgumentException ex)
             {
-                throw new BusinessException(ErrorCodes.SearchParamsInvalid, ex.Message);
+                throw new ServiceException(ErrorCodes.SearchParamsInvalid, ex.Message);
             }
         }
 
@@ -59,7 +59,7 @@ namespace WildlifeTracker.Controllers
         public virtual async Task<IActionResult> Update(int id, [FromBody] T item)
         {
             if (id != item.Id)
-                throw new BusinessException(ErrorCodes.IdMismatch, "The 'id' in the URL does not match the 'Id' of the entity");
+                throw new ServiceException(ErrorCodes.IdMismatch, "The 'id' in the URL does not match the 'Id' of the entity");
 
             var existingItem = await repository.GetByIdAsync(id);
             if (existingItem == null)

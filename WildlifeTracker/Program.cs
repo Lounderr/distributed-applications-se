@@ -71,6 +71,13 @@ namespace WildlifeTracker
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddApiEndpoints();
 
+            // Use invalidmodelstateresponsefactory to return custom error messages. Find a way to reuse it in the exception handler
+
+            builder.Services.AddMvc().ConfigureApiBehaviorOptions(options =>
+            {
+                options.InvalidModelStateResponseFactory = actionContext =>
+                    ValidationProblemDetailsFactory.CreateInvalidModelStateResponse(actionContext);
+            });
 
             builder.Services.AddLogging(loggingBuilder =>
             {
