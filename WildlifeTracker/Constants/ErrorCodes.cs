@@ -16,7 +16,7 @@ namespace WildlifeTracker.Constants
         }
 
         public static string EmailInvalid { get; internal set; }
-        public static string SearchParamsInvalid { get; internal set; }
+        public static string GetParametersInvalid { get; internal set; }
         public static string MobileInvalid { get; internal set; }
         public static string InvalidPageSize { get; internal set; }
         public static string InvalidPageNumber { get; internal set; }

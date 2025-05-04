@@ -1,12 +1,9 @@
 using WildlifeTracker.Data.Models;
-using WildlifeTracker.Data.Repositories;
+using WildlifeTracker.Services;
 
 namespace WildlifeTracker.Controllers
 {
-    public class SightingController : GenericController<Sighting>
+    public class SightingController(IGenericService<Sighting> genericService) : GenericController<Sighting>(genericService)
     {
-        public SightingController(IRepository<Sighting> repository) : base(repository)
-        {
-        }
     }
 }

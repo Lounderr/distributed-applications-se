@@ -9,6 +9,8 @@ using Microsoft.Extensions.Options;
 using WildlifeTracker.Constants;
 using WildlifeTracker.Data.Models;
 using WildlifeTracker.Exceptions;
+using WildlifeTracker.Helpers;
+using WildlifeTracker.Helpers.DataAnotations;
 using WildlifeTracker.Models;
 
 namespace WildlifeTracker.Controllers
@@ -35,14 +37,24 @@ namespace WildlifeTracker.Controllers
                 throw new ServiceException(ErrorCodes.EmailInvalid, "The email provided is invalid");
             }
 
+            E164FormatValidatorAttribute phoneValidator = new();
+
+            bool isValidPhone = phoneValidator.IsValid(registration.PhoneNumber);
+
+            if (!isValidPhone)
+            {
+                throw new ServiceException(ErrorCodes.MobileInvalid, phoneValidator.ErrorMessage ?? "Phone number is not valid");
+            }
+
             var user = new User
             {
                 UserName = registration.Email,
                 Email = registration.Email,
                 FirstName = registration.FirstName,
                 LastName = registration.LastName,
+                PhoneNumber = MobileToE164.Convert(registration.PhoneNumber),
+                City = string.IsNullOrWhiteSpace(registration.City) ? null : registration.City,
                 DateOfBirth = registration.DateOfBirth,
-                City = registration.City
             };
 
             var result = await userManager.CreateAsync(user, registration.Password);

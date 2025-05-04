@@ -10,9 +10,11 @@ using Microsoft.OpenApi.Models;
 using WildlifeTracker.Data;
 using WildlifeTracker.Data.Models;
 using WildlifeTracker.Data.Repositories;
+using WildlifeTracker.Data.Repositories.AspNetCoreTemplate.Data.Repositories;
 using WildlifeTracker.Data.Seeding;
 using WildlifeTracker.Helpers;
 using WildlifeTracker.Middleware;
+using WildlifeTracker.Services;
 
 namespace WildlifeTracker
 {
@@ -92,13 +94,16 @@ namespace WildlifeTracker
             });
 
             // Register repository pattern  
-            builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+            builder.Services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
+            builder.Services.AddScoped(typeof(IDeletableEntityRepository<>), typeof(EfDeletableEntityRepository<>));
             builder.Services.AddSingleton(new JsonSerializerOptions
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                 DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
                 Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() }
             });
+            builder.Services.AddTransient(typeof(IGenericService<>), typeof(GenericService<>));
+
             var app = builder.Build();
 
             app.UseMiddleware<CustomExceptionHandlerMiddleware>();

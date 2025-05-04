@@ -34,22 +34,22 @@ namespace WildlifeTracker.Data.Configurations
                 .IsUnicode(false)
                 .HasMaxLength(16);
 
-            //builder.Property(u => u.DateOfBirth)
-            //    .HasColumnType("date");
-
             builder.ToTable(tb =>
             {
-                // TODO: Add the following code to the validation later:
-                // Regex.IsMatch(phoneNumber, @"^\+[1-9]\d{1,14}$")
-
-                // Enforce E164 format for storing phone numbers
+                // Enforce E164 format for storing phone numbers  
                 tb.HasCheckConstraint("CK_User_PhoneNumber_E164",
                 "PhoneNumber LIKE '+%' AND " +
                 "LEN(PhoneNumber) >= 2 AND LEN(PhoneNumber) <= 16 AND " +
                 "PhoneNumber NOT LIKE '%[^+0-9]%'");
 
-                // Check constraint to ensure users are at least 14 years old
+                // Check constraint to ensure users are at least 14 years old  
                 tb.HasCheckConstraint("CK_User_AdultOnly", "DateOfBirth <= DATEADD(YEAR, -14, GETDATE())");
+
+                // Check constraint to ensure DateOfBirth is not in the future  
+                tb.HasCheckConstraint("CK_User_DateOfBirth_NotFuture", "DateOfBirth <= CAST(GETDATE() AS DATE)");
+
+                // Check constraint to ensure DateOfBirth is not more than 120 years in the past  
+                tb.HasCheckConstraint("CK_User_DateOfBirth_MaxAge", "DateOfBirth >= DATEADD(YEAR, -120, CAST(GETDATE() AS DATE))");
             });
         }
     }

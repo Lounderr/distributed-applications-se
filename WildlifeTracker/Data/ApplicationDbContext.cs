@@ -10,14 +10,12 @@ using WildlifeTracker.Data.Models.Interfaces;
 
 namespace WildlifeTracker.Data
 {
-    public class ApplicationDbContext : IdentityDbContext<User>
+    public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext<User>(options)
     {
         private static readonly MethodInfo SetIsDeletedQueryFilterMethod =
             typeof(ApplicationDbContext).GetMethod(
                 nameof(SetIsDeletedQueryFilter),
                 BindingFlags.NonPublic | BindingFlags.Static)!;
-
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
         public DbSet<Animal> Animals { get; set; }
         public DbSet<Habitat> Habitats { get; set; }
@@ -29,7 +27,7 @@ namespace WildlifeTracker.Data
 
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(UserConfiguration).Assembly);
 
-            this.ConfigureIdentityTables(modelBuilder);
+            ConfigureIdentityTables(modelBuilder);
 
             var entityTypes = modelBuilder.Model.GetEntityTypes().ToList();
 
@@ -88,7 +86,7 @@ namespace WildlifeTracker.Data
             where T : class, IDeletableEntity
             => builder.Entity<T>().HasQueryFilter(e => !e.IsDeleted);
 
-        private void ConfigureIdentityTables(ModelBuilder modelBuilder)
+        private static void ConfigureIdentityTables(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<User>(b => b.ToTable("Users", "identity"));
             modelBuilder.Entity<IdentityRole>(b => b.ToTable("Roles", "identity"));
