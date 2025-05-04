@@ -11,7 +11,7 @@ using WildlifeTracker.Data.Models;
 using WildlifeTracker.Exceptions;
 using WildlifeTracker.Helpers;
 using WildlifeTracker.Helpers.DataAnotations;
-using WildlifeTracker.Models;
+using WildlifeTracker.Models.Identity;
 
 namespace WildlifeTracker.Controllers
 {
@@ -25,7 +25,7 @@ namespace WildlifeTracker.Controllers
         private static readonly EmailAddressAttribute _emailAddressAttribute = new();
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] CustomRegisterRequest registration)
+        public async Task<IActionResult> Register([FromBody] RegisterDto registration)
         {
             if (!userManager.SupportsUserEmail)
             {
@@ -67,7 +67,7 @@ namespace WildlifeTracker.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] CustomLoginRequest login)
+        public async Task<IActionResult> Login([FromBody] LoginDto login)
         {
             signInManager.AuthenticationScheme = IdentityConstants.BearerScheme;
 

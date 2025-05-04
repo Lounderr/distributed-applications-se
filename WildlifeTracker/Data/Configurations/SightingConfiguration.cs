@@ -10,7 +10,7 @@ namespace WildlifeTracker.Data.Configurations
         public void Configure(EntityTypeBuilder<Sighting> builder)
         {
             builder.Property(s => s.Notes)
-                .HasMaxLength(100);
+                .HasMaxLength(500);
 
             builder.Property(s => s.WeatherConditions)
                 .HasMaxLength(100);

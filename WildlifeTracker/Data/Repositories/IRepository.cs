@@ -7,7 +7,7 @@
         IQueryable<TEntity> AllAsNoTracking();
         void Delete(TEntity entity);
         void Dispose();
-        Task<TEntity?> GetByIdAsync(object id);
+        Task<TEntity?> GetByIdAsync(int id);
         Task<int> SaveChangesAsync();
         void Update(TEntity entity);
     }

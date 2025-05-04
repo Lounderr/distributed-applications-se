@@ -2,6 +2,8 @@ using System.Text.Json;
 
 using Asp.Versioning;
 
+using AutoMapper;
+
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.EntityFrameworkCore;
@@ -103,6 +105,7 @@ namespace WildlifeTracker
                 Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() }
             });
             builder.Services.AddTransient(typeof(IGenericService<>), typeof(GenericService<>));
+            builder.Services.AddAutoMapper(typeof(Program));
 
             var app = builder.Build();
 

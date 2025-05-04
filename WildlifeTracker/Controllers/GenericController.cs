@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-using WildlifeTracker.Data.Models.Interfaces;
+using WildlifeTracker.Data.Models;
 using WildlifeTracker.Services;
 
 namespace WildlifeTracker.Controllers
@@ -9,8 +9,8 @@ namespace WildlifeTracker.Controllers
     [ApiController]
     [Authorize]
     [Route("api/v{version:apiVersion}/[controller]")]
-    public abstract class GenericController<T>(IGenericService<T> service) : ControllerBase
-       where T : class, IIdentifiable
+    public abstract class GenericController<TEntity, TCreateDto, TReadDto, TUpdateDto>(IGenericService<TEntity> service) : ControllerBase
+        where TEntity : BaseEntity
     {
         [HttpGet]
         public virtual async Task<IActionResult> GetAll(
@@ -28,34 +28,34 @@ namespace WildlifeTracker.Controllers
             string[]? orderByArr = orderBy?.Split(",", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
 
-            var result = await service.GetFilteredAndPagedAsync(page, size, filtersArr, fieldsArr, orderByArr);
+            var result = await service.GetFilteredAndPagedAsync<TReadDto>(page, size, filtersArr, fieldsArr, orderByArr);
             return this.Ok(result);
         }
 
         [HttpGet("{id}")]
-        public virtual async Task<IActionResult> GetById(int id)
+        public virtual async Task<IActionResult> GetById([FromRoute] int id)
         {
-            var item = await service.GetByIdAsync(id);
+            var item = await service.GetByIdAsync<TReadDto>(id);
 
             return this.Ok(item);
         }
 
         [HttpPost]
-        public virtual async Task<IActionResult> Create([FromBody] T item)
+        public virtual async Task<IActionResult> Create([FromBody] TCreateDto item)
         {
-            await service.AddAsync(item);
-            return this.CreatedAtAction(nameof(GetById), new { id = item.Id }, item);
+            var id = await service.AddAsync(item);
+            return this.CreatedAtAction(nameof(GetById), new { id }, item);
         }
 
         [HttpPut("{id}")]
-        public virtual async Task<IActionResult> Update(int id, [FromBody] T item)
+        public virtual async Task<IActionResult> Update([FromRoute] int id, [FromBody] TUpdateDto item)
         {
             await service.UpdateAsync(id, item);
             return this.NoContent();
         }
 
         [HttpDelete("{id}")]
-        public virtual async Task<IActionResult> Delete(int id)
+        public virtual async Task<IActionResult> Delete([FromRoute] int id)
         {
             await service.DeleteAsync(id);
             return this.NoContent();

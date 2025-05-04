@@ -22,7 +22,7 @@ namespace WildlifeTracker.Data.Repositories
 
             public virtual Task AddAsync(TEntity entity) => this.DbSet.AddAsync(entity).AsTask();
 
-            public virtual async Task<TEntity?> GetByIdAsync(object id) => await this.DbSet.FindAsync(id);
+            public virtual async Task<TEntity?> GetByIdAsync(int id) => await this.DbSet.FindAsync(id);
 
             public virtual void Update(TEntity entity)
             {

@@ -3,9 +3,9 @@ using System.ComponentModel.DataAnnotations;
 
 using WildlifeTracker.Helpers.DataAnotations;
 
-namespace WildlifeTracker.Models
+namespace WildlifeTracker.Models.Identity
 {
-    public class CustomRegisterRequest : CustomLoginRequest
+    public class RegisterDto : LoginDto
     {
         [DefaultValue("John")]
         [MaxLength(50)]

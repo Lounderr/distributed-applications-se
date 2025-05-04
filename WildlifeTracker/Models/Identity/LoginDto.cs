@@ -1,9 +1,9 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace WildlifeTracker.Models
+namespace WildlifeTracker.Models.Identity
 {
-    public class CustomLoginRequest
+    public class LoginDto
     {
         [DefaultValue("user@mailinator.com")]
         [EmailAddress]

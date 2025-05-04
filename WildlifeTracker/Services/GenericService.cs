@@ -1,23 +1,26 @@
 using System.Linq.Expressions;
 using System.Reflection;
 
+using AutoMapper;
+using AutoMapper.QueryableExtensions;
+
 using Microsoft.EntityFrameworkCore;
 
 using WildlifeTracker.Constants;
-using WildlifeTracker.Data.Models.Interfaces;
+using WildlifeTracker.Data.Models;
 using WildlifeTracker.Data.Repositories;
 using WildlifeTracker.Exceptions;
 
 namespace WildlifeTracker.Services
 {
     // TODO: Add DTOs
-    // TODO: Add input validation and store phone numbers
     // TODO: Add user list GET (save last login)
+    // TODO: Anyone can access anybody's sighting - fix it
 
-    public class GenericService<T>(IDeletableEntityRepository<T> repository) : IGenericService<T>
-        where T : class, IIdentifiable, IDeletableEntity
+    public class GenericService<TEntity>(IDeletableEntityRepository<TEntity> repository, IMapper mapper) : IGenericService<TEntity>
+        where TEntity : BaseEntity
     {
-        public async Task<IEnumerable<object>> GetFilteredAndPagedAsync(
+        public async Task<IEnumerable<object>> GetFilteredAndPagedAsync<TDto>(
             int pageNumber,
             int pageSize,
             IEnumerable<string>? filters,
@@ -31,7 +34,7 @@ namespace WildlifeTracker.Services
 
                 filters ??= Enumerable.Empty<string>();
 
-                IQueryable<T> query = repository.AllAsNoTracking();
+                IQueryable<TDto> query = repository.AllAsNoTracking().ProjectTo<TDto>(mapper.ConfigurationProvider);
 
                 foreach (var filter in filters)
                 {
@@ -54,10 +57,10 @@ namespace WildlifeTracker.Services
                         hasNot = true;
                     }
 
-                    var property = typeof(T).GetProperty(propertyName, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance)
-                        ?? throw new ArgumentException($"The property '{propertyName}' is not defined for the entity '{typeof(T).Name}'", propertyName);
+                    var property = typeof(TEntity).GetProperty(propertyName, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance)
+                        ?? throw new ArgumentException($"The property '{propertyName}' is not defined for the entity '{typeof(TEntity).Name}'", propertyName);
 
-                    var parameter = Expression.Parameter(typeof(T), "x");
+                    var parameter = Expression.Parameter(typeof(TEntity), "x");
                     var propertyAccess = Expression.Property(parameter, property);
 
                     object convertedValue;
@@ -101,7 +104,7 @@ namespace WildlifeTracker.Services
                         comparison = Expression.Not(comparison);
                     }
 
-                    var lambda = Expression.Lambda<Func<T, bool>>(comparison, parameter);
+                    var lambda = Expression.Lambda<Func<TDto, bool>>(comparison, parameter);
                     query = query.Where(lambda);
                 }
 
@@ -116,11 +119,11 @@ namespace WildlifeTracker.Services
                         }
                         var propertyName = parts[0];
                         var direction = parts[1].ToLower();
-                        var property = typeof(T).GetProperty(propertyName, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance)
-                            ?? throw new ArgumentException($"The property '{propertyName}' is not defined for the entity '{typeof(T).Name}'", propertyName);
-                        var parameter = Expression.Parameter(typeof(T), "x");
+                        var property = typeof(TEntity).GetProperty(propertyName, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance)
+                            ?? throw new ArgumentException($"The property '{propertyName}' is not defined for the entity '{typeof(TEntity).Name}'", propertyName);
+                        var parameter = Expression.Parameter(typeof(TEntity), "x");
                         var propertyAccess = Expression.Property(parameter, property);
-                        var lambda = Expression.Lambda<Func<T, object>>(Expression.Convert(propertyAccess, typeof(object)), parameter);
+                        var lambda = Expression.Lambda<Func<TDto, object>>(Expression.Convert(propertyAccess, typeof(object)), parameter);
                         query = direction switch
                         {
                             "asc" => query.OrderBy(lambda),
@@ -137,11 +140,11 @@ namespace WildlifeTracker.Services
                     return data.Select(x => fields.ToDictionary(
                         propName => propName,
                         propName => x.GetType().GetProperty(propName, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance)?.GetValue(x)
-                            ?? throw new ArgumentException($"The property '{propName}' is not defined for the entity '{typeof(T).Name}'", propName)
+                            ?? throw new ArgumentException($"The property '{propName}' is not defined for the entity '{typeof(TEntity).Name}'", propName)
                     )).ToList();
                 }
 
-                return data;
+                return data.Select(item => (object)item!);
             }
             catch (ArgumentException ex)
             {
@@ -149,36 +152,50 @@ namespace WildlifeTracker.Services
             }
         }
 
-        public async Task<T?> GetByIdAsync(int id)
+        public async Task<TDto?> GetByIdAsync<TDto>(int id)
         {
-            return await repository.GetByIdAsync(id);
+            var entity = await repository.GetByIdAsync(id);
+            return mapper.Map<TDto>(entity);
         }
 
-        public async Task AddAsync(T item)
+        public async Task<object> AddAsync<TDto>(TDto item)
         {
-            await repository.AddAsync(item);
+            if (item == null)
+                throw new ServiceException(ErrorCodes.ArgumentNull, "The item cannot be null");
+
+            var entity = mapper.Map<TEntity>(item);
+
+            await repository.AddAsync(entity);
             await repository.SaveChangesAsync();
+
+            return entity.Id;
         }
 
-        public async Task UpdateAsync(int id, T item)
+        public async Task UpdateAsync<TDto>(int id, TDto item)
         {
-            if (id != item.Id)
+            if (item == null)
+                throw new ServiceException(ErrorCodes.ArgumentNull, "The item cannot be null");
+
+            // Check DTO for Id property (if any) and verify it matches the id in the URL
+            PropertyInfo? idProp = item.GetType().GetProperty("Id", BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
+            if (idProp != null && idProp.GetValue(item) != (object)id)
                 throw new ServiceException(ErrorCodes.IdMismatch, "The 'id' in the URL does not match the 'Id' of the entity");
+
 
             var existingItem = await repository.GetByIdAsync(id);
             if (existingItem == null)
-                throw new NotFoundException($"Entity {typeof(T).Name} with id {id} not found");
+                throw new NotFoundException($"Entity {typeof(TEntity).Name} with id {id} not found");
 
-            repository.Update(item);
+            mapper.Map(item, existingItem);
             await repository.SaveChangesAsync();
         }
 
         public async Task DeleteAsync(int id)
         {
-            T? entity = await repository.GetByIdAsync(id);
+            TEntity? entity = await repository.GetByIdAsync(id);
             if (entity == null)
             {
-                throw new NotFoundException($"Entity {typeof(T).Name} with id {id} not found");
+                throw new NotFoundException($"Entity {typeof(TEntity).Name} with id {id} not found");
             }
 
             repository.Delete(entity);
