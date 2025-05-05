@@ -63,7 +63,6 @@ namespace WildlifeTracker
                     options.BearerTokenExpiration = TimeSpan.FromMinutes(30);
                 });
 
-
             builder.Services.AddIdentityCore<User>(options =>
             {
                 options.Password.RequireDigit = false;
@@ -118,6 +117,7 @@ namespace WildlifeTracker
             builder.Services.AddHttpContextAccessor();
             builder.Services.AddTransient<ICurrentUserService, CurrentUserService>();
             builder.Services.AddSingleton<IResourceAccessService, ResourceAccessService>();
+            builder.Services.AddSingleton<IOnlineUsersService, OnlineUsersService>();
 
             var app = builder.Build();
 
@@ -154,6 +154,8 @@ namespace WildlifeTracker
             app.UseAuthorization();
 
             app.MapControllers();
+
+            app.UseMiddleware<UserActivityMiddleware>();
 
             app.Run();
         }

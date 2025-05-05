@@ -161,7 +161,7 @@ namespace WildlifeTracker.Services
         public async Task<int> AddAsync<TDto>(TDto item)
         {
             if (item == null)
-                throw new ServiceException(ErrorCodes.ArgumentNull, "The item cannot be null");
+                throw new ServiceException(ErrorCodes.ArgumentNullOrEmpty, "The item cannot be null");
 
             var entity = mapper.Map<TEntity>(item);
 
@@ -176,7 +176,7 @@ namespace WildlifeTracker.Services
         public async Task UpdateAsync<TDto>(int id, TDto item)
         {
             if (item == null)
-                throw new ServiceException(ErrorCodes.ArgumentNull, "The item cannot be null");
+                throw new ServiceException(ErrorCodes.ArgumentNullOrEmpty, "The item cannot be null");
 
             // Check DTO for Id property (if any) and verify it matches the id in the URL
             PropertyInfo? idProp = item.GetType().GetProperty("Id", BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
