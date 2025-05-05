@@ -28,9 +28,10 @@
             }
 
             var seeders = new List<ISeeder>
-                          {
-                              new DummyDataSeeder(),
-                          };
+            {
+                new RoleSeeder(),
+                new DummyDataSeeder(),
+            };
 
             foreach (var seeder in seeders)
             {

@@ -1,12 +1,12 @@
-﻿namespace WildlifeTracker.Models.Animal
+﻿namespace WildlifeTracker.Models.AnimalDtos
 {
-    public class ReadAnimalDto
+    public class ReadAnimalDto : IMapFrom<Data.Models.Animal>
     {
         public int Id { get; set; }
         public required string Name { get; set; }
         public required string Species { get; set; }
         public int Age { get; set; }
         public double Weight { get; set; }
-        public int Height { get; set; }
+        public double Height { get; set; }
     }
 }

@@ -45,6 +45,7 @@ namespace WildlifeTracker.Middleware
                 problemDetails.Status = serviceException switch
                 {
                     NotFoundException => (int)HttpStatusCode.NotFound,
+                    AccessDeniedException => (int)HttpStatusCode.Forbidden,
                     UnauthorizedException => (int)HttpStatusCode.Unauthorized,
                     _ => (int)HttpStatusCode.UnprocessableEntity
                 };

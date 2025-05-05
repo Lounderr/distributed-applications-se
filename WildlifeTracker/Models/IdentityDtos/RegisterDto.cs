@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 using WildlifeTracker.Helpers.DataAnotations;
 
-namespace WildlifeTracker.Models.Identity
+namespace WildlifeTracker.Models.IdentityDtos
 {
     public class RegisterDto : LoginDto
     {

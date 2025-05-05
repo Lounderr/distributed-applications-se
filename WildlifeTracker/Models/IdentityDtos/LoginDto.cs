@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace WildlifeTracker.Models.Identity
+namespace WildlifeTracker.Models.IdentityDtos
 {
     public class LoginDto
     {

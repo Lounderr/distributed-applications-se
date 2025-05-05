@@ -2,7 +2,7 @@
 
 namespace WildlifeTracker.Data.Models
 {
-    public class BaseEntity : IIdentifiable, IAuditInfo, IDeletableEntity
+    public abstract class BaseEntity : IIdentifiable, IAuditInfo, IDeletableEntity
     {
         public int Id { get; set; }
 
@@ -13,5 +13,7 @@ namespace WildlifeTracker.Data.Models
         public bool IsDeleted { get; set; }
 
         public DateTime? DeletedOn { get; set; }
+
+        public required string CreatedBy { get; set; }
     }
 }

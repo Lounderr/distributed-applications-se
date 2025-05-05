@@ -1,10 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
+using WildlifeTracker.Data.Models;
 using WildlifeTracker.Helpers.DataAnotations;
+using WildlifeTracker.Services.Mapping;
 
-namespace WildlifeTracker.Models.Sighting
+namespace WildlifeTracker.Models.SightingDtos
 {
-    public class CreateSightingDto
+    public class CreateSightingDto : IMapTo<Sighting>
     {
         [StringLength(500)]
         public string? Notes { get; set; }

@@ -8,6 +8,6 @@ namespace WildlifeTracker.Data.Models
         public double Weight { get; set; }
         public double Height { get; set; }
 
-        public ICollection<Sighting> Sightings { get; set; } = new HashSet<Sighting>();
+        public virtual ICollection<Sighting> Sightings { get; set; } = new HashSet<Sighting>();
     }
 }

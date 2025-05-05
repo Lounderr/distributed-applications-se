@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 
 using Microsoft.AspNetCore.Authentication.BearerToken;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
@@ -11,11 +12,12 @@ using WildlifeTracker.Data.Models;
 using WildlifeTracker.Exceptions;
 using WildlifeTracker.Helpers;
 using WildlifeTracker.Helpers.DataAnotations;
-using WildlifeTracker.Models.Identity;
+using WildlifeTracker.Models.IdentityDtos;
 
 namespace WildlifeTracker.Controllers
 {
     [ApiController]
+    [AllowAnonymous]
     [Route("api/v{version:apiVersion}/[controller]")]
     public class IdentityController(UserManager<User> userManager,
                               SignInManager<User> signInManager,

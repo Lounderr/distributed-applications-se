@@ -13,11 +13,8 @@ using WildlifeTracker.Exceptions;
 
 namespace WildlifeTracker.Services
 {
-    // TODO: Add DTOs
     // TODO: Add user list GET (save last login)
-    // TODO: Anyone can access anybody's sighting - fix it
-
-    public class GenericService<TEntity>(IDeletableEntityRepository<TEntity> repository, IMapper mapper) : IGenericService<TEntity>
+    public class GenericService<TEntity>(IDeletableEntityRepository<TEntity> repository, IMapper mapper, IResourceAccessService resourceAccess, ICurrentUserService user) : IGenericService<TEntity>
         where TEntity : BaseEntity
     {
         public async Task<IEnumerable<object>> GetFilteredAndPagedAsync<TDto>(
@@ -34,7 +31,7 @@ namespace WildlifeTracker.Services
 
                 filters ??= Enumerable.Empty<string>();
 
-                IQueryable<TDto> query = repository.AllAsNoTracking().ProjectTo<TDto>(mapper.ConfigurationProvider);
+                IQueryable<TDto> query = repository.AllAsNoTracking().Where(e => e.CreatedBy == user.UserId).ProjectTo<TDto>(mapper.ConfigurationProvider);
 
                 foreach (var filter in filters)
                 {
@@ -155,15 +152,20 @@ namespace WildlifeTracker.Services
         public async Task<TDto?> GetByIdAsync<TDto>(int id)
         {
             var entity = await repository.GetByIdAsync(id);
+
+            resourceAccess.Authorize(entity);
+
             return mapper.Map<TDto>(entity);
         }
 
-        public async Task<object> AddAsync<TDto>(TDto item)
+        public async Task<int> AddAsync<TDto>(TDto item)
         {
             if (item == null)
                 throw new ServiceException(ErrorCodes.ArgumentNull, "The item cannot be null");
 
             var entity = mapper.Map<TEntity>(item);
+
+            entity.CreatedBy = user.UserId;
 
             await repository.AddAsync(entity);
             await repository.SaveChangesAsync();
@@ -181,8 +183,10 @@ namespace WildlifeTracker.Services
             if (idProp != null && idProp.GetValue(item) != (object)id)
                 throw new ServiceException(ErrorCodes.IdMismatch, "The 'id' in the URL does not match the 'Id' of the entity");
 
-
             var existingItem = await repository.GetByIdAsync(id);
+
+            resourceAccess.Authorize(existingItem);
+
             if (existingItem == null)
                 throw new NotFoundException($"Entity {typeof(TEntity).Name} with id {id} not found");
 
@@ -193,10 +197,13 @@ namespace WildlifeTracker.Services
         public async Task DeleteAsync(int id)
         {
             TEntity? entity = await repository.GetByIdAsync(id);
+
             if (entity == null)
             {
                 throw new NotFoundException($"Entity {typeof(TEntity).Name} with id {id} not found");
             }
+
+            resourceAccess.Authorize(entity);
 
             repository.Delete(entity);
             await repository.SaveChangesAsync();

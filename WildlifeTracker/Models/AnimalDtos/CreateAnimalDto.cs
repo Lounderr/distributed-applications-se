@@ -1,9 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace WildlifeTracker.Models.Animal
+using WildlifeTracker.Data.Models;
+using WildlifeTracker.Services.Mapping;
+
+namespace WildlifeTracker.Models.AnimalDtos
 {
     // Animal DTOs
-    public class CreateAnimalDto
+    public class CreateAnimalDto : IMapTo<Animal>
     {
         [Required]
         [StringLength(100)]

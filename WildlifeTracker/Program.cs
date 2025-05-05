@@ -4,6 +4,7 @@ using Asp.Versioning;
 
 using AutoMapper;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.EntityFrameworkCore;
@@ -62,6 +63,7 @@ namespace WildlifeTracker
                     options.BearerTokenExpiration = TimeSpan.FromMinutes(30);
                 });
 
+
             builder.Services.AddIdentityCore<User>(options =>
             {
                 options.Password.RequireDigit = false;
@@ -95,6 +97,13 @@ namespace WildlifeTracker
                       | ActivityTrackingOptions.SpanId);
             });
 
+            builder.Services.AddAuthorization(options =>
+            {
+                options.FallbackPolicy = new AuthorizationPolicyBuilder()
+                    .RequireAuthenticatedUser()
+                    .Build();
+            });
+
             // Register repository pattern  
             builder.Services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
             builder.Services.AddScoped(typeof(IDeletableEntityRepository<>), typeof(EfDeletableEntityRepository<>));
@@ -106,6 +115,9 @@ namespace WildlifeTracker
             });
             builder.Services.AddTransient(typeof(IGenericService<>), typeof(GenericService<>));
             builder.Services.AddAutoMapper(typeof(Program));
+            builder.Services.AddHttpContextAccessor();
+            builder.Services.AddTransient<ICurrentUserService, CurrentUserService>();
+            builder.Services.AddSingleton<IResourceAccessService, ResourceAccessService>();
 
             var app = builder.Build();
 

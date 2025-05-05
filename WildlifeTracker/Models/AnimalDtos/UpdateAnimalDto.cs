@@ -1,4 +1,4 @@
-﻿namespace WildlifeTracker.Models.Animal
+﻿namespace WildlifeTracker.Models.AnimalDtos
 {
     public class UpdateAnimalDto : CreateAnimalDto
     {

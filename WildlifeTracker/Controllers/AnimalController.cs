@@ -1,11 +1,10 @@
 using WildlifeTracker.Data.Models;
-using WildlifeTracker.Models.Animal;
-using WildlifeTracker.Services;
+using WildlifeTracker.Models.AnimalDtos;
 
 namespace WildlifeTracker.Controllers
 {
-    public class AnimalController(IGenericService<Animal> genericService)
-        : GenericController<Animal, CreateAnimalDto, ReadAnimalDto, UpdateAnimalDto>(genericService)
+    public class AnimalController()
+        : GenericController<Animal, CreateAnimalDto, ReadAnimalDto, UpdateAnimalDto>()
     {
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace WildlifeTracker.Models.Sighting
+﻿namespace WildlifeTracker.Models.SightingDtos
 {
     public class UpdateSightingDto : CreateSightingDto
     {
