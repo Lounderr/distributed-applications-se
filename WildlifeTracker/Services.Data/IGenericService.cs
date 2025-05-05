@@ -1,7 +1,6 @@
-﻿
-using WildlifeTracker.Data.Models.Interfaces;
+﻿using WildlifeTracker.Data.Models.Interfaces;
 
-namespace WildlifeTracker.Services
+namespace WildlifeTracker.Services.Data
 {
     public interface IGenericService<T>
         where T : class, IIdentifiable

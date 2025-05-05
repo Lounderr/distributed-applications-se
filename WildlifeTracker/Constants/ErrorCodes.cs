@@ -25,6 +25,7 @@ namespace WildlifeTracker.Constants
         public static string IdMismatch { get; internal set; }
         public static string ArgumentNullOrEmpty { get; internal set; }
         public static string AccessDenied { get; internal set; }
+        public static string ImageUploadFailed { get; internal set; }
     }
 }
 #pragma warning restore CS8618

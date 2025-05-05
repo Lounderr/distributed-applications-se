@@ -18,6 +18,7 @@ using WildlifeTracker.Data.Seeding;
 using WildlifeTracker.Helpers;
 using WildlifeTracker.Middleware;
 using WildlifeTracker.Services;
+using WildlifeTracker.Services.Data;
 
 namespace WildlifeTracker
 {
@@ -103,21 +104,26 @@ namespace WildlifeTracker
                     .Build();
             });
 
-            // Register repository pattern  
             builder.Services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
             builder.Services.AddScoped(typeof(IDeletableEntityRepository<>), typeof(EfDeletableEntityRepository<>));
+            builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+            builder.Services.AddScoped<IResourceAccessService, ResourceAccessService>();
+
             builder.Services.AddSingleton(new JsonSerializerOptions
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                 DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
                 Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() }
             });
-            builder.Services.AddTransient(typeof(IGenericService<>), typeof(GenericService<>));
-            builder.Services.AddAutoMapper(typeof(Program));
+
             builder.Services.AddHttpContextAccessor();
-            builder.Services.AddTransient<ICurrentUserService, CurrentUserService>();
-            builder.Services.AddSingleton<IResourceAccessService, ResourceAccessService>();
+            builder.Services.AddAutoMapper(typeof(Program));
+
+            builder.Services.AddScoped(typeof(IGenericService<>), typeof(GenericService<>));
+            builder.Services.AddScoped<IAnimalImageService, AnimalImageService>();
+
             builder.Services.AddSingleton<IOnlineUsersService, OnlineUsersService>();
+            builder.Services.AddSingleton<IImageProcessingService, ImageProcessingService>();
 
             var app = builder.Build();
 
@@ -143,8 +149,7 @@ namespace WildlifeTracker
                 {
                     options.ConfigObject.AdditionalItems.Add("persistAuthorization", "true");
                     options.SwaggerEndpoint("/swagger/v1/swagger.json", "Wildlife Tracker v1");
-                    options.InjectJavascript("/swagger/custom-swagger.js"); // inject JS
-
+                    options.InjectJavascript("/swagger/custom-swagger.js");
                 });
             }
 

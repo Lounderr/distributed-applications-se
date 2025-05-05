@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 using WildlifeTracker.Data.Models;
-using WildlifeTracker.Services;
+using WildlifeTracker.Services.Data;
 
 namespace WildlifeTracker.Controllers
 {

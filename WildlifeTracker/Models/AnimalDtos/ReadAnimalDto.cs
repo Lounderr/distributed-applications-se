@@ -1,6 +1,8 @@
-﻿namespace WildlifeTracker.Models.AnimalDtos
+﻿using WildlifeTracker.Data.Models;
+
+namespace WildlifeTracker.Models.AnimalDtos
 {
-    public class ReadAnimalDto : IMapFrom<Data.Models.Animal>
+    public class ReadAnimalDto : IMapFrom<Animal>
     {
         public int Id { get; set; }
         public required string Name { get; set; }
@@ -8,5 +10,6 @@
         public int Age { get; set; }
         public double Weight { get; set; }
         public double Height { get; set; }
+        public string? ImagePath { get; set; }
     }
 }

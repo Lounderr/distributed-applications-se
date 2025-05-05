@@ -7,6 +7,7 @@ namespace WildlifeTracker.Data.Models
         public int Age { get; set; }
         public double Weight { get; set; }
         public double Height { get; set; }
+        public string? ImagePath { get; set; }
 
         public virtual ICollection<Sighting> Sightings { get; set; } = new HashSet<Sighting>();
     }

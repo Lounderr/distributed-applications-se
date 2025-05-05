@@ -11,9 +11,8 @@ using WildlifeTracker.Data.Models;
 using WildlifeTracker.Data.Repositories;
 using WildlifeTracker.Exceptions;
 
-namespace WildlifeTracker.Services
+namespace WildlifeTracker.Services.Data
 {
-    // TODO: Add user list GET (save last login)
     public class GenericService<TEntity>(IDeletableEntityRepository<TEntity> repository, IMapper mapper, IResourceAccessService resourceAccess, ICurrentUserService user) : IGenericService<TEntity>
         where TEntity : BaseEntity
     {
@@ -173,6 +172,7 @@ namespace WildlifeTracker.Services
             return entity.Id;
         }
 
+        // TODO: Create the item if it is not found
         public async Task UpdateAsync<TDto>(int id, TDto item)
         {
             if (item == null)
