@@ -1,22 +1,13 @@
-version: '3.8'
-
 services:
-  web:
+  wildlifetracker:
+    image: ${DOCKER_REGISTRY-}wildlifetracker
     build:
-      context: ./WildlifeTracker
-    ports:
-      - "8000:80"
-      - "8001:443"
+      context: .
+      dockerfile: WildlifeTracker/Dockerfile
     depends_on:
       - sqlserver
     environment:
-      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/https-dev.pfx
-      - ASPNETCORE_Kestrel__Certificates__Default__Password=Test123!
-      - ASPNETCORE_URLS=https://+;http://+
-      - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=WildlifeTracker;User Id=sa;Password=Test123!;TrustServerCertificate=True;
-    volumes:
-      - ./WildlifeTracker/https-dev.pfx:/https/https-dev.pfx:ro
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
     environment:
