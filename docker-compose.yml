@@ -1,6 +1,6 @@
 services:
   wildlifetracker:
-    image: ${DOCKER_REGISTRY-}wildlifetracker
+    image: wildlifetracker:latest
     build:
       context: .
       dockerfile: WildlifeTracker/Dockerfile
@@ -8,6 +8,13 @@ services:
       - sqlserver
     environment:
       - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=WildlifeTracker;User Id=sa;Password=Test123!;TrustServerCertificate=True;
+  wildlifetracker.client:
+    image: wildlifetracker.client:latest
+    build:
+      context: ./wildlifetracker.client
+      dockerfile: DockerFile
+    ports:
+      - "4200:80"
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
     environment:
@@ -17,6 +24,3 @@ services:
       - "1433:1433"
     volumes:
       - sql_data:/var/opt/mssql
-
-volumes:
-  sql_data:

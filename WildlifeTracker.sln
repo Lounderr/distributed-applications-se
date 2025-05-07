@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WildlifeTracker", "Wildlife
 EndProject
 Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{9AD6C235-FFF3-4C03-82AD-5B78C8F6E3DF}"
 EndProject
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "wildlifetracker.client", "wildlifetracker.client\wildlifetracker.client.esproj", "{69A9408A-43B1-4A29-A413-F826FC062768}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,12 @@ Global
 		{9AD6C235-FFF3-4C03-82AD-5B78C8F6E3DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9AD6C235-FFF3-4C03-82AD-5B78C8F6E3DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9AD6C235-FFF3-4C03-82AD-5B78C8F6E3DF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{69A9408A-43B1-4A29-A413-F826FC062768}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{69A9408A-43B1-4A29-A413-F826FC062768}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{69A9408A-43B1-4A29-A413-F826FC062768}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{69A9408A-43B1-4A29-A413-F826FC062768}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{69A9408A-43B1-4A29-A413-F826FC062768}.Release|Any CPU.Build.0 = Release|Any CPU
+		{69A9408A-43B1-4A29-A413-F826FC062768}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
