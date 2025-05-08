@@ -1,8 +1,9 @@
 ﻿using WildlifeTracker.Data.Models;
+using WildlifeTracker.Data.Models.Interfaces;
 
 namespace WildlifeTracker.Models.SightingDtos
 {
-    public class ReadSightingDto : IMapFrom<Sighting>
+    public class ReadSightingDto : IMapFrom<Sighting>, IIdentifiable
     {
         public int Id { get; set; }
         public string? Notes { get; set; }

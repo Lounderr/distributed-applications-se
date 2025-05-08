@@ -7,16 +7,20 @@ export interface BaseEntity {
     id: number;
 }
 
+export interface ApiResponse<T> {
+    status: number;
+    data: T;
+}
+
 export interface PaginatedResponse<T> {
     data: T[];
     total: number;
-    page: number;
     size: number;
 }
 
 @Injectable()
 export abstract class BaseService<T extends BaseEntity, CreateDto, UpdateDto> {
-    protected constructor(
+    constructor(
         protected http: HttpClient,
         protected endpoint: string
     ) {}
@@ -39,15 +43,21 @@ export abstract class BaseService<T extends BaseEntity, CreateDto, UpdateDto> {
     }
 
     getById(id: number): Observable<T> {
-        return this.http.get<T>(`${this.baseUrl}/${id}`);
+        return this.http.get<ApiResponse<T>>(`${this.baseUrl}/${id}`).pipe(
+            map(response => response.data)
+        );
     }
 
     create(data: CreateDto): Observable<T> {
-        return this.http.post<T>(this.baseUrl, data);
+        return this.http.post<ApiResponse<T>>(this.baseUrl, data).pipe(
+            map(response => ({ id: response.data.id, ...data }) as unknown as T)
+        );
     }
 
     update(id: number, data: UpdateDto): Observable<T> {
-        return this.http.put<T>(`${this.baseUrl}/${id}`, data);
+        return this.http.put(`${this.baseUrl}/${id}`, data).pipe(
+            map(() => ({ id, ...data }) as unknown as T)
+        );
     }
 
     delete(id: number): Observable<void> {

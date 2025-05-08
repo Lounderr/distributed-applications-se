@@ -16,6 +16,7 @@ import { HabitatService } from '../../services/habitat.service';
 import { Habitat } from '../../models/habitat.model';
 import { HabitatDialogComponent } from './habitat-dialog.component';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { ConfirmDialogComponent } from '../../components/confirm-dialog/confirm-dialog.component';
 
 @Component({
     selector: 'app-habitats',
@@ -360,19 +361,31 @@ export class HabitatsComponent implements OnInit, AfterViewInit {
     }
 
     deleteHabitat(habitat: Habitat) {
-        if (confirm(`Are you sure you want to delete ${habitat.name}?`)) {
-            this.habitatService.delete(habitat.id).subscribe({
-                next: () => {
-                    this.habitats = this.habitats.filter(h => h.id !== habitat.id);
-                    this.dataSource.data = this.habitats;
-                    this.snackBar.open('Habitat deleted successfully', 'Close', { duration: 3000 });
-                },
-                error: (error) => {
-                    this.snackBar.open('Error deleting habitat', 'Close', { duration: 3000 });
-                    console.error('Error deleting habitat:', error);
-                }
-            });
-        }
+        const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+            width: '600px',
+            data: {
+                title: 'Confirm Deletion',
+                message: 'Are you sure you want to delete this habitat?',
+                confirmText: 'Delete',
+                cancelText: 'Cancel'
+            }
+        });
+
+        dialogRef.afterClosed().subscribe(result => {
+            if (result) {
+                this.habitatService.delete(habitat.id).subscribe({
+                    next: () => {
+                        this.habitats = this.habitats.filter(h => h.id !== habitat.id);
+                        this.dataSource.data = this.habitats;
+                        this.snackBar.open('Habitat deleted successfully', 'Close', { duration: 3000 });
+                    },
+                    error: (error) => {
+                        this.snackBar.open('Error deleting habitat', 'Close', { duration: 3000 });
+                        console.error('Error deleting habitat:', error);
+                    }
+                });            
+            }
+        });
     }
 
     // Form control getters

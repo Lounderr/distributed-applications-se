@@ -15,7 +15,7 @@ namespace WildlifeTracker.Models.HabitatDtos
         [StringLength(100)]
         public string Location { get; set; } = null!;
 
-        [Range(0, double.MaxValue)]
+        [Range(1, double.MaxValue)]
         public double Size { get; set; }
 
         [Required]

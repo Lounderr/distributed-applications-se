@@ -1,8 +1,9 @@
 ﻿using WildlifeTracker.Data.Models;
+using WildlifeTracker.Data.Models.Interfaces;
 
 namespace WildlifeTracker.Models.HabitatDtos
 {
-    public class ReadHabitatDto : IMapFrom<Habitat>
+    public class ReadHabitatDto : IMapFrom<Habitat>, IIdentifiable
     {
         public int Id { get; set; }
         public required string Name { get; set; }

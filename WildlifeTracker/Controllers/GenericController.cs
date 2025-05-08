@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 using WildlifeTracker.Data.Models;
+using WildlifeTracker.Data.Models.Interfaces;
 using WildlifeTracker.Services.Data;
 
 namespace WildlifeTracker.Controllers
@@ -10,6 +11,7 @@ namespace WildlifeTracker.Controllers
     [Route("api/v{version:apiVersion}/[controller]")]
     public abstract class GenericController<TEntity, TCreateDto, TReadDto, TUpdateDto>() : ControllerBase
         where TEntity : BaseEntity
+        where TReadDto : IIdentifiable
     {
         private IGenericService<TEntity> genericService => this.HttpContext.RequestServices.GetRequiredService<IGenericService<TEntity>>();
 
@@ -43,8 +45,8 @@ namespace WildlifeTracker.Controllers
         [HttpPost]
         public virtual async Task<IActionResult> Create([FromBody] TCreateDto item)
         {
-            var id = await this.genericService.AddAsync(item);
-            return this.CreatedAtAction(nameof(GetById), new { id }, item);
+            var createdItem = await this.genericService.AddAsync<TReadDto, TCreateDto>(item);
+            return this.CreatedAtAction(nameof(GetById), new { createdItem.Id }, createdItem);
         }
 
         [HttpPut("{id}")]

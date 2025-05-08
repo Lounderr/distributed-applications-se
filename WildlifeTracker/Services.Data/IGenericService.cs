@@ -5,7 +5,7 @@ namespace WildlifeTracker.Services.Data
     public interface IGenericService<T>
         where T : class, IIdentifiable
     {
-        Task<int> AddAsync<TDto>(TDto item);
+        Task<TReadDto> AddAsync<TReadDto, TDto>(TDto item);
         Task DeleteAsync(int id);
         Task<TDto?> GetByIdAsync<TDto>(int id);
         Task<IEnumerable<object>> GetFilteredAndPagedAsync<TDto>(int pageNumber, int pageSize, IEnumerable<string>? filters, IEnumerable<string>? fields, IEnumerable<string>? orderBy);

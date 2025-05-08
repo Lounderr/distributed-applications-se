@@ -157,7 +157,7 @@ namespace WildlifeTracker.Services.Data
             return mapper.Map<TDto>(entity);
         }
 
-        public async Task<int> AddAsync<TDto>(TDto item)
+        public async Task<TReadDto> AddAsync<TReadDto, TDto>(TDto item)
         {
             if (item == null)
                 throw new ServiceException(ErrorCodes.ArgumentNullOrEmpty, "The item cannot be null");
@@ -169,7 +169,7 @@ namespace WildlifeTracker.Services.Data
             await repository.AddAsync(entity);
             await repository.SaveChangesAsync();
 
-            return entity.Id;
+            return mapper.Map<TReadDto>(entity);
         }
 
         // TODO: Create the item if it is not found
