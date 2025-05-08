@@ -8,6 +8,6 @@ import { BaseService } from './base.service';
 })
 export class SightingService extends BaseService<Sighting, CreateSightingDto, UpdateSightingDto> {
     constructor(http: HttpClient) {
-        super(http, '/api/v1/sighting');
+        super(http, '/sighting');
     }
 } 

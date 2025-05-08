@@ -8,10 +8,10 @@ import { BaseService } from './base.service';
     providedIn: 'root'
 })
 export class AnimalService extends BaseService<Animal, CreateAnimalDto, UpdateAnimalDto> {
-    private readonly API_URL = '/api/v1/animal';
+    private readonly API_URL = '/animal';
 
     constructor(http: HttpClient) {
-        super(http, '/api/v1/animal');
+        super(http, '/animal');
     }
 
     uploadImage(id: number, file: File): Observable<void> {
