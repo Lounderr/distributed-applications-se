@@ -36,14 +36,14 @@ export class AuthService {
     }
 
     login(credentials: LoginDto): Observable<AuthResponse> {
-        return this.http.post<AuthResponse>(`${environment.apiUrl}/api/v1/identity/login`, credentials)
+        return this.http.post<AuthResponse>(`${environment.apiUrl}/identity/login`, credentials)
             .pipe(
                 tap(response => this.handleAuthResponse(response))
             );
     }
 
     register(userData: RegisterDto): Observable<AuthResponse> {
-        return this.http.post<AuthResponse>(`${environment.apiUrl}/api/v1/identity/register`, userData)
+        return this.http.post<AuthResponse>(`${environment.apiUrl}/identity/register`, userData)
             .pipe(
                 tap(response => this.handleAuthResponse(response))
             );
@@ -59,7 +59,7 @@ export class AuthService {
         }
 
         const request: RefreshRequest = { refreshToken };
-        return this.http.post<AuthResponse>(`${environment.apiUrl}/api/v1/identity/refresh`, request)
+        return this.http.post<AuthResponse>(`${environment.apiUrl}/identity/refresh`, request)
             .pipe(
                 tap(response => this.handleAuthResponse(response))
             );

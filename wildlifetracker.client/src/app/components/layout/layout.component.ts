@@ -1,10 +1,13 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet } from '@angular/router';
-import { MatToolbarModule } from '@angular/material/toolbar';
+import { RouterOutlet, RouterLink } from '@angular/router';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
+import { MatDialogModule, MatDialog } from '@angular/material/dialog';
+import { MatButtonModule } from '@angular/material/button';
+import { AuthService } from '../../services/auth.service';
+import { ConfirmDialogComponent } from '../../components/confirm-dialog/confirm-dialog.component';
 
 @Component({
     selector: 'app-layout',
@@ -12,29 +15,32 @@ import { MatIconModule } from '@angular/material/icon';
     imports: [
         CommonModule,
         RouterOutlet,
-        MatToolbarModule,
+        RouterLink,
         MatSidenavModule,
         MatListModule,
-        MatIconModule
+        MatIconModule,
+        MatDialogModule,
+        MatButtonModule
     ],
     template: `
-        <mat-toolbar color="primary">
-            <span>Wildlife Tracker</span>
-        </mat-toolbar>
         <mat-sidenav-container>
             <mat-sidenav mode="side" opened>
                 <mat-nav-list>
-                    <a mat-list-item routerLink="/animals">
+                    <a mat-list-item [routerLink]="['/animals']">
                         <mat-icon>pets</mat-icon>
                         <span>Animals</span>
                     </a>
-                    <a mat-list-item routerLink="/habitats">
+                    <a mat-list-item [routerLink]="['/habitats']">
                         <mat-icon>landscape</mat-icon>
                         <span>Habitats</span>
                     </a>
-                    <a mat-list-item routerLink="/sightings">
+                    <a mat-list-item [routerLink]="['/sightings']">
                         <mat-icon>visibility</mat-icon>
                         <span>Sightings</span>
+                    </a>
+                    <a mat-list-item (click)="onLogout()">
+                        <mat-icon>logout</mat-icon>
+                        <span>Logout</span>
                     </a>
                 </mat-nav-list>
             </mat-sidenav>
@@ -45,7 +51,8 @@ import { MatIconModule } from '@angular/material/icon';
     `,
     styles: [`
         mat-sidenav-container {
-            height: calc(100vh - 64px);
+            height: 100vh;
+            padding: 20px;
         }
         mat-sidenav {
             width: 250px;
@@ -58,4 +65,27 @@ import { MatIconModule } from '@angular/material/icon';
         }
     `]
 })
-export class LayoutComponent {} 
+export class LayoutComponent {
+    constructor(
+        private authService: AuthService,
+        private dialog: MatDialog
+    ) {}
+
+    onLogout(): void {
+        const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+            width: '300px',
+            data: {
+                title: 'Confirm Logout',
+                message: 'Are you sure you want to logout?',
+                confirmText: 'Logout',
+                cancelText: 'Cancel'
+            }
+        });
+
+        dialogRef.afterClosed().subscribe(result => {
+            if (result) {
+                this.authService.logout();
+            }
+        });
+    }
+} 
