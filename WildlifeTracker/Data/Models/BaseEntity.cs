@@ -1,4 +1,6 @@
-﻿using WildlifeTracker.Data.Models.Interfaces;
+﻿using System.ComponentModel.DataAnnotations;
+
+using WildlifeTracker.Data.Models.Interfaces;
 
 namespace WildlifeTracker.Data.Models
 {
@@ -14,6 +16,7 @@ namespace WildlifeTracker.Data.Models
 
         public DateTime? DeletedOn { get; set; }
 
+        [MaxLength(200)]
         public required string CreatedBy { get; set; }
     }
 }

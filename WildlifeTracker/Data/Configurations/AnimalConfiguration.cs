@@ -21,6 +21,9 @@ namespace WildlifeTracker.Data.Configurations
             builder.Property(a => a.Height)
                 .HasPrecision(5, 2);
 
+            builder.Property(a => a.ImagePath)
+                .HasMaxLength(200);
+
             builder.ToTable(tb =>
             {
                 tb.HasCheckConstraint("CK_Animal_Age_Positive", "[Age] >= 0");
