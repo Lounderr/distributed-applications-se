@@ -33,6 +33,16 @@ namespace WildlifeTracker
                 options.Conventions.Add(new RouteTokenTransformerConvention(new SlugifyParameterTransformer()));
             });
 
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowFrontend",
+                    builder => builder
+                        .WithOrigins("http://localhost:50898")
+                        .AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .AllowCredentials());
+            });
+
             builder.Services.AddApiVersioning(options =>
             {
                 options.DefaultApiVersion = new ApiVersion(1, 0);
@@ -77,7 +87,7 @@ namespace WildlifeTracker
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddApiEndpoints();
 
-            // Use invalidmodelstateresponsefactory to return custom error messages. Find a way to reuse it in the exception handler
+            // Use invalidmodelstateresponsefactory to return custom error messages. Find a way to reuse it in the exception handler  
 
             builder.Services.AddMvc().ConfigureApiBehaviorOptions(options =>
             {
@@ -155,8 +165,11 @@ namespace WildlifeTracker
 
             app.UseHttpsRedirection();
 
+            app.UseCors("AllowFrontend");
+
             app.UseAuthentication();
             app.UseAuthorization();
+
 
             app.MapControllers();
 

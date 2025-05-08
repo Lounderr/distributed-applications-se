@@ -69,6 +69,8 @@ namespace WildlifeTracker.Middleware
             problemDetails.Extensions["timestamp"] = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ");
             problemDetails.Instance = context.Request.Path;
 
+            response.StatusCode = (int)problemDetails.Status;
+
             var result = JsonSerializer.Serialize(problemDetails, jsonSerializerOptions);
 
             await response.WriteAsync(result);
