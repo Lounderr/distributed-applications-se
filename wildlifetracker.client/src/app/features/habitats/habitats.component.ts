@@ -75,7 +75,7 @@ import { ConfirmDialogComponent } from '../../components/confirm-dialog/confirm-
                         <mat-label>Size Range</mat-label>
                         <div class="range-inputs">
                             <input matInput type="number" [formControl]="minSizeControl" placeholder="Min">
-                            <span>-</span>
+                            <span *ngIf="minSizeControl.value || maxSizeControl.value">-</span>
                             <input matInput type="number" [formControl]="maxSizeControl" placeholder="Max">
                         </div>
                     </mat-form-field>
@@ -84,7 +84,7 @@ import { ConfirmDialogComponent } from '../../components/confirm-dialog/confirm-
                         <mat-label>Temperature Range</mat-label>
                         <div class="range-inputs">
                             <input matInput type="number" [formControl]="minTempControl" placeholder="Min">
-                            <span>-</span>
+                            <span *ngIf="minTempControl.value || maxTempControl.value">-</span>
                             <input matInput type="number" [formControl]="maxTempControl" placeholder="Max">
                         </div>
                     </mat-form-field>

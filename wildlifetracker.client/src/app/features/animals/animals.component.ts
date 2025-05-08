@@ -70,7 +70,7 @@ import { ConfirmDialogComponent } from '../../components/confirm-dialog/confirm-
                         <mat-label>Age Range</mat-label>
                         <div class="range-inputs">
                             <input matInput type="number" [formControl]="minAgeControl" placeholder="Min">
-                            <span>-</span>
+                            <span *ngIf="minAgeControl.value || maxAgeControl.value">-</span>
                             <input matInput type="number" [formControl]="maxAgeControl" placeholder="Max">
                         </div>
                     </mat-form-field>
@@ -79,7 +79,7 @@ import { ConfirmDialogComponent } from '../../components/confirm-dialog/confirm-
                         <mat-label>Weight Range (kg)</mat-label>
                         <div class="range-inputs">
                             <input matInput type="number" [formControl]="minWeightControl" placeholder="Min">
-                            <span>-</span>
+                            <span *ngIf="minWeightControl.value || maxWeightControl.value">-</span>
                             <input matInput type="number" [formControl]="maxWeightControl" placeholder="Max">
                         </div>
                     </mat-form-field>
@@ -88,7 +88,7 @@ import { ConfirmDialogComponent } from '../../components/confirm-dialog/confirm-
                         <mat-label>Height Range (cm)</mat-label>
                         <div class="range-inputs">
                             <input matInput type="number" [formControl]="minHeightControl" placeholder="Min">
-                            <span>-</span>
+                            <span *ngIf="minHeightControl.value || maxHeightControl.value">-</span>
                             <input matInput type="number" [formControl]="maxHeightControl" placeholder="Max">
                         </div>
                     </mat-form-field>

@@ -9,13 +9,20 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
+import { MatSelectModule } from '@angular/material/select';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, FormControl } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { RouterModule } from '@angular/router';
 import { SightingService } from '../../services/sighting.service';
+import { AnimalService } from '../../services/animal.service';
+import { HabitatService } from '../../services/habitat.service';
 import { Sighting } from '../../models/sighting.model';
+import { Animal } from '../../models/animal.model';
+import { Habitat } from '../../models/habitat.model';
 import { SightingDialogComponent } from './sighting-dialog.component';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, map, startWith } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 import { ConfirmDialogComponent } from '../../components/confirm-dialog/confirm-dialog.component';
 
 @Component({
@@ -32,6 +39,8 @@ import { ConfirmDialogComponent } from '../../components/confirm-dialog/confirm-
         MatIconModule,
         MatDialogModule,
         MatSnackBarModule,
+        MatSelectModule,
+        MatAutocompleteModule,
         FormsModule,
         ReactiveFormsModule,
         RouterModule
@@ -62,18 +71,29 @@ import { ConfirmDialogComponent } from '../../components/confirm-dialog/confirm-
                     </mat-form-field>
 
                     <mat-form-field>
-                        <mat-label>Animal ID</mat-label>
-                        <input matInput type="number" [formControl]="animalIdControl" placeholder="Filter by animal ID">
+                        <mat-label>Animal</mat-label>
+                        <input matInput
+                               [formControl]="animalSearchControl"
+                               [matAutocomplete]="animalAuto"
+                               placeholder="Search for an animal...">
+                        <mat-autocomplete #animalAuto="matAutocomplete" [displayWith]="displayAnimalFn">
+                            <mat-option *ngFor="let animal of filteredAnimals$ | async" [value]="animal">
+                                {{animal.name}} ({{animal.species}})
+                            </mat-option>
+                        </mat-autocomplete>
                     </mat-form-field>
 
                     <mat-form-field>
-                        <mat-label>Habitat ID</mat-label>
-                        <input matInput type="number" [formControl]="habitatIdControl" placeholder="Filter by habitat ID">
-                    </mat-form-field>
-
-                    <mat-form-field>
-                        <mat-label>Observer ID</mat-label>
-                        <input matInput [formControl]="observerIdControl" placeholder="Filter by observer ID">
+                        <mat-label>Habitat</mat-label>
+                        <input matInput
+                               [formControl]="habitatSearchControl"
+                               [matAutocomplete]="habitatAuto"
+                               placeholder="Search for a habitat...">
+                        <mat-autocomplete #habitatAuto="matAutocomplete" [displayWith]="displayHabitatFn">
+                            <mat-option *ngFor="let habitat of filteredHabitats$ | async" [value]="habitat">
+                                {{habitat.name}} ({{habitat.location}})
+                            </mat-option>
+                        </mat-autocomplete>
                     </mat-form-field>
 
                     <mat-form-field>
@@ -106,22 +126,16 @@ import { ConfirmDialogComponent } from '../../components/confirm-dialog/confirm-
                         <td mat-cell *matCellDef="let row">{{row.sightingDateTime | date:'medium'}}</td>
                     </ng-container>
 
-                    <!-- Animal ID Column -->
+                    <!-- Animal Column -->
                     <ng-container matColumnDef="animalId">
-                        <th mat-header-cell *matHeaderCellDef mat-sort-header>Animal ID</th>
-                        <td mat-cell *matCellDef="let row">{{row.animalId}}</td>
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header>Animal</th>
+                        <td mat-cell *matCellDef="let row">{{getAnimalName(row.animalId)}}</td>
                     </ng-container>
 
-                    <!-- Habitat ID Column -->
+                    <!-- Habitat Column -->
                     <ng-container matColumnDef="habitatId">
-                        <th mat-header-cell *matHeaderCellDef mat-sort-header>Habitat ID</th>
-                        <td mat-cell *matCellDef="let row">{{row.habitatId}}</td>
-                    </ng-container>
-
-                    <!-- Observer ID Column -->
-                    <ng-container matColumnDef="observerId">
-                        <th mat-header-cell *matHeaderCellDef mat-sort-header>Observer ID</th>
-                        <td mat-cell *matCellDef="let row">{{row.observerId}}</td>
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header>Habitat</th>
+                        <td mat-cell *matCellDef="let row">{{getHabitatName(row.habitatId)}}</td>
                     </ng-container>
 
                     <!-- Notes Column -->
@@ -148,7 +162,7 @@ import { ConfirmDialogComponent } from '../../components/confirm-dialog/confirm-
 
                     <!-- Row shown when there is no matching data. -->
                     <tr class="mat-row" *matNoDataRow>
-                        <td class="mat-cell" colspan="7">No data matching the filters</td>
+                        <td class="mat-cell" colspan="6">No data matching the filters</td>
                     </tr>
                 </table>
 
@@ -203,18 +217,24 @@ import { ConfirmDialogComponent } from '../../components/confirm-dialog/confirm-
     `]
 })
 export class SightingsComponent implements OnInit, AfterViewInit {
-    displayedColumns: string[] = ['weatherConditions', 'sightingDateTime', 'animalId', 'habitatId', 'observerId', 'notes', 'actions'];
+    displayedColumns: string[] = ['weatherConditions', 'sightingDateTime', 'animalId', 'habitatId', 'notes', 'actions'];
     dataSource: MatTableDataSource<Sighting>;
     sightings: Sighting[] = [];
+    animals: Animal[] = [];
+    habitats: Habitat[] = [];
+    filteredAnimals$: Observable<Animal[]>;
+    filteredHabitats$: Observable<Habitat[]>;
+
     filtersForm: FormGroup<{
         weather: FormControl<string | null>;
         animalId: FormControl<number | null>;
         habitatId: FormControl<number | null>;
-        observerId: FormControl<string | null>;
         minDate: FormControl<string | null>;
         maxDate: FormControl<string | null>;
     }>;
     globalSearchControl: FormControl<string | null>;
+    animalSearchControl: FormControl<Animal | null>;
+    habitatSearchControl: FormControl<Habitat | null>;
 
     @ViewChild(MatPaginator) paginator!: MatPaginator;
     @ViewChild(MatSort) sort!: MatSort;
@@ -222,30 +242,59 @@ export class SightingsComponent implements OnInit, AfterViewInit {
 
     constructor(
         private sightingService: SightingService,
+        private animalService: AnimalService,
+        private habitatService: HabitatService,
         private dialog: MatDialog,
         private snackBar: MatSnackBar,
         private fb: FormBuilder
     ) {
         this.dataSource = new MatTableDataSource<Sighting>();
         this.globalSearchControl = new FormControl<string | null>('');
+        this.animalSearchControl = new FormControl<Animal | null>(null);
+        this.habitatSearchControl = new FormControl<Habitat | null>(null);
+        
         this.filtersForm = this.fb.group({
             weather: new FormControl<string | null>(''),
             animalId: new FormControl<number | null>(null),
             habitatId: new FormControl<number | null>(null),
-            observerId: new FormControl<string | null>(''),
             minDate: new FormControl<string | null>(null),
             maxDate: new FormControl<string | null>(null)
         });
+
+        // Initialize filtered observables
+        this.filteredAnimals$ = this.animalSearchControl.valueChanges.pipe(
+            startWith(''),
+            map(value => this._filterAnimals(value))
+        );
+
+        this.filteredHabitats$ = this.habitatSearchControl.valueChanges.pipe(
+            startWith(''),
+            map(value => this._filterHabitats(value))
+        );
     }
 
     ngOnInit() {
         this.loadSightings();
+        this.loadAnimals();
+        this.loadHabitats();
         this.setupFilters();
     }
 
     ngAfterViewInit() {
         this.dataSource.paginator = this.paginator;
         this.dataSource.sort = this.sort;
+    }
+
+    loadAnimals() {
+        this.animalService.getAll().subscribe(animals => {
+            this.animals = animals;
+        });
+    }
+
+    loadHabitats() {
+        this.habitatService.getAll().subscribe(habitats => {
+            this.habitats = habitats;
+        });
     }
 
     setupFilters() {
@@ -264,6 +313,60 @@ export class SightingsComponent implements OnInit, AfterViewInit {
         ).subscribe(() => {
             this.applyFilters();
         });
+
+        // Setup animal search
+        this.animalSearchControl.valueChanges.subscribe(animal => {
+            if (animal && typeof animal === 'object') {
+                this.filtersForm.get('animalId')?.setValue(animal.id);
+            } else {
+                this.filtersForm.get('animalId')?.setValue(null);
+            }
+        });
+
+        // Setup habitat search
+        this.habitatSearchControl.valueChanges.subscribe(habitat => {
+            if (habitat && typeof habitat === 'object') {
+                this.filtersForm.get('habitatId')?.setValue(habitat.id);
+            } else {
+                this.filtersForm.get('habitatId')?.setValue(null);
+            }
+        });
+    }
+
+    private _filterAnimals(value: string | Animal | null): Animal[] {
+        if (!value) return this.animals;
+        const filterValue = typeof value === 'string' ? value.toLowerCase() : value.name.toLowerCase();
+        return this.animals.filter(animal => 
+            animal.name.toLowerCase().includes(filterValue) || 
+            animal.species.toLowerCase().includes(filterValue)
+        );
+    }
+
+    private _filterHabitats(value: string | Habitat | null): Habitat[] {
+        if (!value) return this.habitats;
+        const filterValue = typeof value === 'string' ? value.toLowerCase() : value.name.toLowerCase();
+        return this.habitats.filter(habitat => 
+            habitat.name.toLowerCase().includes(filterValue) || 
+            habitat.location.toLowerCase().includes(filterValue)
+        );
+    }
+
+    displayAnimalFn(animal: Animal): string {
+        return animal ? `${animal.name} (${animal.species})` : '';
+    }
+
+    displayHabitatFn(habitat: Habitat): string {
+        return habitat ? `${habitat.name} (${habitat.location})` : '';
+    }
+
+    getAnimalName(animalId: number): string {
+        const animal = this.animals.find(a => a.id === animalId);
+        return animal ? `${animal.name} (${animal.species})` : `Animal ${animalId}`;
+    }
+
+    getHabitatName(habitatId: number): string {
+        const habitat = this.habitats.find(h => h.id === habitatId);
+        return habitat ? `${habitat.name} (${habitat.location})` : `Habitat ${habitatId}`;
     }
 
     applyFilters() {
@@ -282,15 +385,12 @@ export class SightingsComponent implements OnInit, AfterViewInit {
             const matchesAnimalId = !filters.animalId || data.animalId === filters.animalId;
             const matchesHabitatId = !filters.habitatId || data.habitatId === filters.habitatId;
             
-            const matchesObserverId = !filters.observerId || 
-                data.observerId?.toLowerCase().includes(filters.observerId.toLowerCase());
-            
             const sightingDate = new Date(data.sightingDateTime);
             const matchesDate = (!filters.minDate || sightingDate >= new Date(filters.minDate)) && 
                               (!filters.maxDate || sightingDate <= new Date(filters.maxDate));
 
             return matchesGlobalSearch && matchesWeather && matchesAnimalId && 
-                   matchesHabitatId && matchesObserverId && matchesDate;
+                   matchesHabitatId && matchesDate;
         };
 
         this.dataSource.filter = 'trigger';
@@ -298,6 +398,8 @@ export class SightingsComponent implements OnInit, AfterViewInit {
 
     clearFilters() {
         this.globalSearchControl.setValue('');
+        this.animalSearchControl.setValue(null);
+        this.habitatSearchControl.setValue(null);
         this.filtersForm.reset();
     }
 
@@ -397,10 +499,6 @@ export class SightingsComponent implements OnInit, AfterViewInit {
 
     get habitatIdControl() {
         return this.filtersForm.get('habitatId') as FormControl<number | null>;
-    }
-
-    get observerIdControl() {
-        return this.filtersForm.get('observerId') as FormControl<string | null>;
     }
 
     get minDateControl() {

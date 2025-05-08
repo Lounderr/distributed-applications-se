@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 
 @Injectable({
@@ -10,20 +10,30 @@ export class LoadingService {
 
     loading$: Observable<boolean> = this.loadingSubject.asObservable();
 
+    constructor(private ngZone: NgZone) {}
+
     show(): void {
-        this.activeRequests++;
-        this.loadingSubject.next(true);
+        this.ngZone.run(() => {
+            this.activeRequests++;
+            if (this.activeRequests === 1) {
+                this.loadingSubject.next(true);
+            }
+        });
     }
 
     hide(): void {
-        this.activeRequests--;
-        if (this.activeRequests === 0) {
-            this.loadingSubject.next(false);
-        }
+        this.ngZone.run(() => {
+            this.activeRequests = Math.max(0, this.activeRequests - 1);
+            if (this.activeRequests === 0) {
+                this.loadingSubject.next(false);
+            }
+        });
     }
 
     reset(): void {
-        this.activeRequests = 0;
-        this.loadingSubject.next(false);
+        this.ngZone.run(() => {
+            this.activeRequests = 0;
+            this.loadingSubject.next(false);
+        });
     }
 } 

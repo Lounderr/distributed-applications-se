@@ -1,4 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
+
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 using WildlifeTracker.Data.Models;
 using WildlifeTracker.Helpers.DataAnotations;
@@ -25,7 +28,8 @@ namespace WildlifeTracker.Models.SightingDtos
         [Required]
         public int HabitatId { get; set; }
 
-        [Required]
-        public required string ObserverId { get; set; }
+        [BindNever]
+        [JsonIgnore] // TODO: Take a second look at this to confirm that it is not bad practice
+        public string? ObserverId { get; set; }
     }
 }
