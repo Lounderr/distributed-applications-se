@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, RouterLink } from '@angular/router';
 import { MatSidenavModule } from '@angular/material/sidenav';
@@ -6,8 +6,10 @@ import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
+import { MatToolbarModule } from '@angular/material/toolbar';
 import { AuthService } from '../../services/auth.service';
 import { ConfirmDialogComponent } from '../../components/confirm-dialog/confirm-dialog.component';
+import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 
 @Component({
     selector: 'app-layout',
@@ -20,11 +22,12 @@ import { ConfirmDialogComponent } from '../../components/confirm-dialog/confirm-
         MatListModule,
         MatIconModule,
         MatDialogModule,
-        MatButtonModule
+        MatButtonModule,
+        MatToolbarModule
     ],
     template: `
         <mat-sidenav-container>
-            <mat-sidenav mode="side" opened>
+            <mat-sidenav #sidenav [mode]="isMobile ? 'over' : 'side'" [opened]="!isMobile">
                 <mat-nav-list>
                     <a mat-list-item [routerLink]="['/animals']">
                         <mat-icon>pets</mat-icon>
@@ -45,14 +48,21 @@ import { ConfirmDialogComponent } from '../../components/confirm-dialog/confirm-
                 </mat-nav-list>
             </mat-sidenav>
             <mat-sidenav-content>
-                <router-outlet></router-outlet>
+                <mat-toolbar *ngIf="isMobile">
+                    <button mat-icon-button (click)="sidenav.toggle()">
+                        <mat-icon>menu</mat-icon>
+                    </button>
+                    <span>Wildlife Tracker</span>
+                </mat-toolbar>
+                <div class="content">
+                    <router-outlet></router-outlet>
+                </div>
             </mat-sidenav-content>
         </mat-sidenav-container>
     `,
     styles: [`
         mat-sidenav-container {
             height: 100vh;
-            padding: 20px;
         }
         mat-sidenav {
             width: 250px;
@@ -63,13 +73,27 @@ import { ConfirmDialogComponent } from '../../components/confirm-dialog/confirm-
         mat-icon {
             margin-right: 10px;
         }
+        .content {
+            padding: 20px;
+        }
     `]
 })
-export class LayoutComponent {
+export class LayoutComponent implements OnInit {
+    isMobile = false;
+
     constructor(
         private authService: AuthService,
-        private dialog: MatDialog
+        private dialog: MatDialog,
+        private breakpointObserver: BreakpointObserver
     ) {}
+
+    ngOnInit() {
+        this.breakpointObserver.observe([
+            Breakpoints.Handset
+        ]).subscribe(result => {
+            this.isMobile = result.matches;
+        });
+    }
 
     onLogout(): void {
         const dialogRef = this.dialog.open(ConfirmDialogComponent, {
