@@ -10,6 +10,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { AuthService } from '../../services/auth.service';
 import { ConfirmDialogComponent } from '../../components/confirm-dialog/confirm-dialog.component';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
+import { OnlineUsersComponent } from '../online-users/online-users.component';
 
 @Component({
     selector: 'app-layout',
@@ -23,7 +24,8 @@ import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
         MatIconModule,
         MatDialogModule,
         MatButtonModule,
-        MatToolbarModule
+        MatToolbarModule,
+        OnlineUsersComponent
     ],
     template: `
         <mat-sidenav-container>
@@ -46,6 +48,7 @@ import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
                         <span>Logout</span>
                     </a>
                 </mat-nav-list>
+                <app-online-users></app-online-users>
             </mat-sidenav>
             <mat-sidenav-content>
                 <mat-toolbar *ngIf="isMobile">
