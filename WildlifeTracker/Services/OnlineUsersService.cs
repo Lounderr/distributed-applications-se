@@ -15,7 +15,7 @@ namespace WildlifeTracker.Services
                 List<string> usernames = cacheEntries
                    .Keys
                    .OfType<string>()
-                   .Where(key => key.StartsWith("UserActivity_"))
+                   .Where(key => key.StartsWith("UserActivity_") && memoryCache.Get<string>(key) != null)
                    .Shuffle()
                    .Take(50)
                    .Select(key => memoryCache.Get<string>(key) ?? throw new ArgumentNullException("Onlune users cache contains null values"))
