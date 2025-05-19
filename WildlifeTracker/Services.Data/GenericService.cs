@@ -30,7 +30,7 @@ namespace WildlifeTracker.Services.Data
 
                 filters ??= Enumerable.Empty<string>();
 
-                IQueryable<TDto> query = repository.AllAsNoTracking().Where(e => e.CreatedBy == user.UserId).ProjectTo<TDto>(mapper.ConfigurationProvider);
+                IQueryable<TEntity> query = repository.AllAsNoTracking().Where(e => e.CreatedBy == user.UserId);
 
                 foreach (var filter in filters)
                 {
@@ -100,7 +100,7 @@ namespace WildlifeTracker.Services.Data
                         comparison = Expression.Not(comparison);
                     }
 
-                    var lambda = Expression.Lambda<Func<TDto, bool>>(comparison, parameter);
+                    var lambda = Expression.Lambda<Func<TEntity, bool>>(comparison, parameter);
                     query = query.Where(lambda);
                 }
 
@@ -119,7 +119,7 @@ namespace WildlifeTracker.Services.Data
                             ?? throw new ArgumentException($"The property '{propertyName}' is not defined for the entity '{typeof(TEntity).Name}'", propertyName);
                         var parameter = Expression.Parameter(typeof(TEntity), "x");
                         var propertyAccess = Expression.Property(parameter, property);
-                        var lambda = Expression.Lambda<Func<TDto, object>>(Expression.Convert(propertyAccess, typeof(object)), parameter);
+                        var lambda = Expression.Lambda<Func<TEntity, object>>(Expression.Convert(propertyAccess, typeof(object)), parameter);
                         query = direction switch
                         {
                             "asc" => query.OrderBy(lambda),
@@ -129,8 +129,8 @@ namespace WildlifeTracker.Services.Data
                     }
                 }
 
-                var data = await query.Skip(pageNumber * pageSize).Take(pageSize).ToListAsync();
-
+                var data = await query.Skip(pageNumber * pageSize).Take(pageSize).ProjectTo<TDto>(mapper.ConfigurationProvider).ToListAsync();
+                
                 if (fields != null && fields.Any())
                 {
                     return data.Select(x => fields.ToDictionary(
