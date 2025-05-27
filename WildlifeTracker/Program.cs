@@ -65,11 +65,12 @@ namespace WildlifeTracker
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")
                 ?? throw new ArgumentNullException(null, "Connection string not found in the configuration file")));
 
+            // Reference Token Strategy
             builder.Services.AddAuthentication(IdentityConstants.BearerScheme)
                 .AddBearerToken(IdentityConstants.BearerScheme, options =>
                 {
-                    options.ClaimsIssuer = builder.Configuration["Jwt:Issuer"]
-                        ?? throw new ArgumentNullException(null, "JWT issuer not found in the configuration file");
+                    options.ClaimsIssuer = builder.Configuration["Token:Issuer"]
+                        ?? throw new ArgumentNullException(null, "Token issuer not found in the configuration file");
                     options.RefreshTokenExpiration = TimeSpan.FromDays(30);
                     options.BearerTokenExpiration = TimeSpan.FromMinutes(30);
                 });

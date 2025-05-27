@@ -6,4 +6,4 @@ export const environment = {
         refreshTokenKey: 'refresh_token',
         tokenExpiryKey: 'token_expiry'
     }
-}; 
+};
