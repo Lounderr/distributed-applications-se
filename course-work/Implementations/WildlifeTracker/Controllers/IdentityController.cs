@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
+using Swashbuckle.AspNetCore.Annotations;
+
 using WildlifeTracker.Constants;
 using WildlifeTracker.Data.Models;
 using WildlifeTracker.Exceptions;
@@ -19,6 +21,7 @@ namespace WildlifeTracker.Controllers
     [ApiController]
     [AllowAnonymous]
     [Route("api/v{version:apiVersion}/[controller]")]
+    [SwaggerTag("User authentication and registration operations")]
     public class IdentityController(UserManager<User> userManager,
                               SignInManager<User> signInManager,
                               IOptionsMonitor<BearerTokenOptions> bearerTokenOptions,
@@ -27,6 +30,15 @@ namespace WildlifeTracker.Controllers
         private static readonly EmailAddressAttribute _emailAddressAttribute = new();
 
         [HttpPost("register")]
+        [SwaggerOperation(
+            Summary = "Register new user",
+            Description = "Creates a new user account with the provided registration information",
+            OperationId = "Register",
+            Tags = new[] { "Identity" }
+        )]
+        [SwaggerResponse(StatusCodes.Status200OK, "User successfully registered")]
+        [SwaggerResponse(StatusCodes.Status400BadRequest, "Invalid registration data")]
+        [SwaggerResponse(StatusCodes.Status409Conflict, "User with this email already exists")]
         public async Task<IActionResult> Register([FromBody] RegisterDto registration)
         {
             if (!userManager.SupportsUserEmail)
@@ -69,6 +81,15 @@ namespace WildlifeTracker.Controllers
         }
 
         [HttpPost("login")]
+        [SwaggerOperation(
+            Summary = "User login",
+            Description = "Authenticates a user and returns a bearer token for subsequent requests",
+            OperationId = "Login",
+            Tags = new[] { "Identity" }
+        )]
+        [SwaggerResponse(StatusCodes.Status200OK, "Successfully authenticated")]
+        [SwaggerResponse(StatusCodes.Status401Unauthorized, "Invalid credentials")]
+        [SwaggerResponse(StatusCodes.Status423Locked, "Account is locked")]
         public async Task<IActionResult> Login([FromBody] LoginDto login)
         {
             signInManager.AuthenticationScheme = IdentityConstants.BearerScheme;
@@ -84,6 +105,14 @@ namespace WildlifeTracker.Controllers
         }
 
         [HttpPost("refresh")]
+        [SwaggerOperation(
+            Summary = "Refresh token",
+            Description = "Refreshes an expired bearer token using a valid refresh token",
+            OperationId = "RefreshToken",
+            Tags = new[] { "Identity" }
+        )]
+        [SwaggerResponse(StatusCodes.Status200OK, "Token successfully refreshed")]
+        [SwaggerResponse(StatusCodes.Status401Unauthorized, "Invalid or expired refresh token")]
         public async Task<IActionResult> Refresh([FromBody] RefreshRequest refreshRequest)
         {
             var refreshTokenProtector = bearerTokenOptions.Get(IdentityConstants.BearerScheme).RefreshTokenProtector;
